@@ -10,7 +10,6 @@ function Home({ user }: { user: User | null }) {
   const navigate = useNavigate();
   const [songs, setSongs] = useState<any[]>([]);
 
-  // 노래 목록 불러오기
   useEffect(() => {
     fetchSongs();
   }, []);
@@ -24,7 +23,6 @@ function Home({ user }: { user: User | null }) {
     if (!error) setSongs(data || []);
   }
 
-  // 로그인 처리
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -32,14 +30,15 @@ function Home({ user }: { user: User | null }) {
     });
   };
 
+  // [수정] 로그아웃 로직 강화
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    // 브라우저를 강제로 새로고침하여 상태를 확실하게 초기화
+    window.location.reload(); 
   };
 
-  // [추가] 공유하기 기능 함수
   const handleShare = async (e: React.MouseEvent, songId: string, title: string) => {
-    e.stopPropagation(); // 카드 클릭(게임 이동) 이벤트 방지
-    
+    e.stopPropagation();
     const shareUrl = `${window.location.origin}/game/${songId}`;
     const shareData = {
       title: 'Choir Memory Game',
@@ -48,13 +47,11 @@ function Home({ user }: { user: User | null }) {
     };
 
     try {
-      // 모바일 공유하기 지원 시
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // PC 등 미지원 시 클립보드 복사
         await navigator.clipboard.writeText(shareUrl);
-        alert('주소가 복사되었습니다! 원하는 곳에 붙여넣기 하세요.');
+        alert('주소가 복사되었습니다!');
       }
     } catch (err) {
       console.error('공유 실패:', err);
@@ -63,24 +60,40 @@ function Home({ user }: { user: User | null }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
-      {/* 상단 헤더 */}
-      <header className="w-full max-w-2xl flex justify-between items-center mb-8 py-4 border-b">
-        <h1 className="text-2xl font-bold text-indigo-600">Choir Memory 🎶</h1>
+      
+      {/* --- [수정] 헤더 영역 (환영 메시지를 여기로 통합) --- */}
+      <header className="w-full max-w-2xl flex justify-between items-center mb-6 py-4 border-b bg-white px-4 rounded-xl shadow-sm mt-2">
+        <h1 className="text-xl font-bold text-indigo-600 flex items-center gap-2">
+           Choir Memory 🎶
+        </h1>
         <div>
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm hidden sm:inline">{user.user_metadata.full_name}님</span>
-              <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+              <div className="text-right hidden sm:block">
+                <p className="text-xs text-gray-400">환영합니다!</p>
+                <p className="text-sm font-bold text-gray-700">{user.user_metadata.full_name}님</p>
+              </div>
+              {/* 모바일에서는 이름 대신 로그아웃 버튼만 보이거나 간단하게 처리 */}
+              <button 
+                onClick={handleLogout} 
+                className="text-xs bg-gray-200 text-gray-600 px-3 py-2 rounded hover:bg-gray-300 font-bold transition"
+              >
+                로그아웃
+              </button>
             </div>
           ) : (
-            <button onClick={handleLogin} className="text-sm bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600">
+            <button 
+              onClick={handleLogin} 
+              className="text-sm bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 font-bold shadow transition flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
               구글 로그인
             </button>
           )}
         </div>
       </header>
 
-      {/* 메인 액션 버튼 */}
+      {/* 메인 액션 버튼 (로그인 시에만 보임) */}
       <div className="w-full max-w-2xl mb-6">
         {user ? (
           <button 
@@ -90,16 +103,20 @@ function Home({ user }: { user: User | null }) {
             <span>➕ 새 노래 등록하기</span>
           </button>
         ) : (
-          <div className="bg-blue-50 text-blue-700 p-4 rounded-lg text-center text-sm">
-            로그인하면 노래를 등록하고 기록을 저장할 수 있습니다.
+          <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-center text-sm border border-blue-100">
+            👋 로그인하면 새로운 노래를 등록할 수 있습니다.<br/>
+            (미등록 사용자도 아래 게임은 할 수 있어요!)
           </div>
         )}
       </div>
 
-      {/* 노래 목록 */}
-      <div className="w-full max-w-2xl space-y-3">
+      {/* 노래 목록 (로그인 여부와 상관없이 항상 보임) */}
+      <div className="w-full max-w-2xl space-y-3 pb-10">
+        <h2 className="text-gray-500 text-sm font-medium ml-1 mb-2">등록된 곡 목록</h2>
         {songs.length === 0 ? (
-          <div className="text-center text-gray-400 py-10">등록된 노래가 없습니다.</div>
+          <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">
+            아직 등록된 노래가 없습니다.
+          </div>
         ) : (
           songs.map((song) => (
             <div 
@@ -107,12 +124,10 @@ function Home({ user }: { user: User | null }) {
               onClick={() => navigate(`/game/${song.song_id}`)} 
               className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50"
             >
-              {/* 상단 영역: 제목, 성부배지, 공유버튼 */}
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 flex-wrap">
                     {song.title}
-                    {/* 성부 정보가 있으면 배지로 표시 */}
                     {song.voice_part && (
                       <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded">
                         {song.voice_part}
@@ -121,7 +136,6 @@ function Home({ user }: { user: User | null }) {
                   </h3>
                 </div>
 
-                {/* 공유하기 버튼 (아이콘) */}
                 <button
                   onClick={(e) => handleShare(e, song.song_id, song.title)}
                   className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition -mt-2 -mr-2"
@@ -133,7 +147,6 @@ function Home({ user }: { user: User | null }) {
                 </button>
               </div>
 
-              {/* 하단 영역: 난이도, 가사 미리보기 */}
               <div className="flex justify-between text-sm text-gray-500 mt-2">
                 <span>난이도: Lv.{song.difficulty}</span>
                 <span className="truncate max-w-[150px]">
@@ -153,12 +166,16 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    // 초기 세션 확인
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
+
+    // 로그인 상태 변경 감지
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
+
     return () => subscription.unsubscribe();
   }, []);
 

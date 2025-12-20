@@ -156,7 +156,7 @@ export default function Game() {
   const handleResultShare = async () => {
     const shareUrl = window.location.href;
     const shareData = {
-      title: 'Choir Memory Game',
+      title: 'Sing By Heart',
       text: `🎵 [${songTitle}] 가사 암기 도전! 제 점수는 ${score}점입니다. 당신도 도전해보세요!`,
       url: shareUrl,
     };

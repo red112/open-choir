@@ -239,7 +239,7 @@ function Home({ user }: { user: User | null }) {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
       {/* 상단 헤더 */}
       <header className="w-full max-w-2xl flex justify-between items-center mb-8 py-4 border-b">
-        <h1 className="text-2xl font-bold text-indigo-600">Choir Memory 🎶</h1>
+        <h1 className="text-2xl font-bold text-indigo-600">Sing By Heart 🎶</h1>
         <div>
           {user ? (
             <div className="flex items-center gap-3">

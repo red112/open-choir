@@ -25,7 +25,7 @@ PC 개발에서 외부 라이브러리 라이선스 키를 받는 과정과 비�
 1.  **[Google Cloud Console](https://console.cloud.google.com/)**에 접속하고 구글 계정으로 로그인합니다.
 2.  **프로젝트 생성:**
     *   좌측 상단 로고 옆의 **[프로젝트 선택]** (또는 My Project) 클릭 -> **[새 프로젝트]** 클릭.
-    *   프로젝트 이름: `Choir Memory Game` (아무거나 상관없음) -> **[만들기]** 클릭.
+    *   프로젝트 이름: `Sing By Heart` (아무거나 상관없음) -> **[만들기]** 클릭.
     *   알림창에서 **[프로젝트 선택]**을 눌러 해당 프로젝트로 이동합니다.
 3.  **API 및 서비스 이동:**
     *   좌측 햄버거 메뉴(≡) 클릭 -> **[API 및 서비스]** -> **[OAuth 동의 화면]** 클릭.
@@ -114,7 +114,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Choir Memory 🎶</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Sing By Heart 🎶</h1>
 
         {user ? (
           // 로그인 성공 시 보여줄 화면

@@ -1,92 +1,174 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import CreateSong from './CreateSong';
+import Game from './Game';
 
-function App() {
-  const [user, setUser] = useState<User | null>(null);
+// 1. 홈 화면 컴포넌트
+function Home({ user }: { user: User | null }) {
+  const navigate = useNavigate();
+  const [songs, setSongs] = useState<any[]>([]);
 
-  // 1. 페이지 로드 시 로그인 상태 확인
+  // 노래 목록 불러오기
   useEffect(() => {
-    // 현재 로그인된 사용자 정보 가져오기
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    // 로그인/로그아웃 상태가 변하면 자동으로 감지하는 리스너
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    fetchSongs();
   }, []);
 
-  // 2. 구글 로그인 함수
-  const handleGoogleLogin = async () => {
+  async function fetchSongs() {
+    const { data, error } = await supabase
+      .from('songs')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (!error) setSongs(data || []);
+  }
+
+  // 로그인 처리
+  const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        // 로컬호스트로 다시 돌아오게 설정 (배포시엔 배포 주소로 변경 필요 - Step 4 참고)
-        // redirectTo: window.location.origin
-
-        // 이 코드는 '현재 브라우저 주소'를 자동으로 따라갑니다.
-        // Vercel에서 접속했으면 Vercel 주소가 되고, Localhost면 Localhost가 됩니다.
-        redirectTo: window.location.origin 
-      }
+      options: { redirectTo: window.location.origin }
     });
   };
 
-  // 3. 로그아웃 함수
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Choir Memory 🎶</h1>
+  // [추가] 공유하기 기능 함수
+  const handleShare = async (e: React.MouseEvent, songId: string, title: string) => {
+    e.stopPropagation(); // 카드 클릭(게임 이동) 이벤트 방지
+    
+    const shareUrl = `${window.location.origin}/game/${songId}`;
+    const shareData = {
+      title: 'Choir Memory Game',
+      text: `🎵 [${title}] 가사 암기 게임에 도전해보세요!`,
+      url: shareUrl,
+    };
 
-        {user ? (
-          // 로그인 성공 시 보여줄 화면
-          <div className="space-y-4">
-            <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto overflow-hidden">
-              {/* 구글 프로필 사진 표시 */}
-              <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+    try {
+      // 모바일 공유하기 지원 시
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // PC 등 미지원 시 클립보드 복사
+        await navigator.clipboard.writeText(shareUrl);
+        alert('주소가 복사되었습니다! 원하는 곳에 붙여넣기 하세요.');
+      }
+    } catch (err) {
+      console.error('공유 실패:', err);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+      {/* 상단 헤더 */}
+      <header className="w-full max-w-2xl flex justify-between items-center mb-8 py-4 border-b">
+        <h1 className="text-2xl font-bold text-indigo-600">Choir Memory 🎶</h1>
+        <div>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm hidden sm:inline">{user.user_metadata.full_name}님</span>
+              <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
             </div>
-            <h2 className="text-lg font-semibold text-gray-700">
-              환영합니다, <br/>
-              <span className="text-indigo-600">{user.user_metadata.full_name}</span>님!
-            </h2>
-            <p className="text-sm text-gray-500">{user.email}</p>
-            
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition"
-            >
-              로그아웃
+          ) : (
+            <button onClick={handleLogin} className="text-sm bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600">
+              구글 로그인
             </button>
-          </div>
+          )}
+        </div>
+      </header>
+
+      {/* 메인 액션 버튼 */}
+      <div className="w-full max-w-2xl mb-6">
+        {user ? (
+          <button 
+            onClick={() => navigate('/create')}
+            className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+          >
+            <span>➕ 새 노래 등록하기</span>
+          </button>
         ) : (
-          // 로그인 안 했을 때 보여줄 화면
-          <div>
-            <p className="text-gray-500 mb-6">서비스를 이용하려면 로그인이 필요합니다.</p>
-            <button
-              onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-4 rounded transition shadow-sm"
-            >
-              {/* 구글 G 로고 SVG */}
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              Google 계정으로 로그인
-            </button>
+          <div className="bg-blue-50 text-blue-700 p-4 rounded-lg text-center text-sm">
+            로그인하면 노래를 등록하고 기록을 저장할 수 있습니다.
           </div>
+        )}
+      </div>
+
+      {/* 노래 목록 */}
+      <div className="w-full max-w-2xl space-y-3">
+        {songs.length === 0 ? (
+          <div className="text-center text-gray-400 py-10">등록된 노래가 없습니다.</div>
+        ) : (
+          songs.map((song) => (
+            <div 
+              key={song.song_id} 
+              onClick={() => navigate(`/game/${song.song_id}`)} 
+              className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50"
+            >
+              {/* 상단 영역: 제목, 성부배지, 공유버튼 */}
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 flex-wrap">
+                    {song.title}
+                    {/* 성부 정보가 있으면 배지로 표시 */}
+                    {song.voice_part && (
+                      <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                        {song.voice_part}
+                      </span>
+                    )}
+                  </h3>
+                </div>
+
+                {/* 공유하기 버튼 (아이콘) */}
+                <button
+                  onClick={(e) => handleShare(e, song.song_id, song.title)}
+                  className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition -mt-2 -mr-2"
+                  title="공유하기"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-1.964 2.25 2.25 0 0 0-3.933 1.964Z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* 하단 영역: 난이도, 가사 미리보기 */}
+              <div className="flex justify-between text-sm text-gray-500 mt-2">
+                <span>난이도: Lv.{song.difficulty}</span>
+                <span className="truncate max-w-[150px]">
+                   {song.lyrics_content.slice(0, 15)}...
+                </span>
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>
   );
 }
 
-export default App;
+// 2. 전체 앱 라우터 설정
+export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home user={user} />} />
+        <Route path="/create" element={<CreateSong />} />
+        <Route path="/game/:songId" element={<Game />} /> 
+      </Routes>
+    </BrowserRouter>
+  );
+}

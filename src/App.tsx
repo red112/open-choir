@@ -26,7 +26,11 @@ function App() {
       provider: 'google',
       options: {
         // 로컬호스트로 다시 돌아오게 설정 (배포시엔 배포 주소로 변경 필요 - Step 4 참고)
-        redirectTo: window.location.origin
+        // redirectTo: window.location.origin
+
+        // 이 코드는 '현재 브라우저 주소'를 자동으로 따라갑니다.
+        // Vercel에서 접속했으면 Vercel 주소가 되고, Localhost면 Localhost가 됩니다.
+        redirectTo: window.location.origin 
       }
     });
   };

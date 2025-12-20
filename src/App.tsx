@@ -9,14 +9,13 @@ import Game from './Game';
 function Home({ user }: { user: User | null }) {
   const navigate = useNavigate();
   const [songs, setSongs] = useState<any[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false); // 관리자 여부 체크
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchSongs();
     if (user) checkUserRole(user.id);
   }, [user]);
 
-  // 관리자 여부 확인 함수
   async function checkUserRole(userId: string) {
     const { data } = await supabase
       .from('profiles')
@@ -56,7 +55,7 @@ function Home({ user }: { user: User | null }) {
     e.stopPropagation();
     const shareUrl = `${window.location.origin}/game/${songId}`;
     const shareData = {
-      title: 'Sing By Heart Game',
+      title: 'Choir Memory Game',
       text: `🎵 [${title}] 가사 암기 게임에 도전해보세요!`,
       url: shareUrl,
     };
@@ -73,26 +72,25 @@ function Home({ user }: { user: User | null }) {
     }
   };
 
-  // [추가] 삭제 기능 함수
   const handleDelete = async (e: React.MouseEvent, songId: string) => {
-    e.stopPropagation(); // 카드 클릭 방지
-    
+    e.stopPropagation();
     if (!window.confirm('정말로 이 노래를 삭제하시겠습니까? (복구 불가)')) return;
 
     try {
-      const { error } = await supabase
-        .from('songs')
-        .delete()
-        .eq('song_id', songId);
-
+      const { error } = await supabase.from('songs').delete().eq('song_id', songId);
       if (error) throw error;
-
       alert('삭제되었습니다.');
-      fetchSongs(); // 목록 새로고침
+      fetchSongs();
     } catch (err: any) {
       alert('삭제 실패: 권한이 없거나 오류가 발생했습니다.');
       console.error(err);
     }
+  };
+
+  // [추가] 유튜브 링크 열기 함수
+  const handleOpenYoutube = (e: React.MouseEvent, url: string) => {
+    e.stopPropagation(); // 카드 클릭 방지
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -101,7 +99,7 @@ function Home({ user }: { user: User | null }) {
       {/* 헤더 영역 */}
       <header className="w-full max-w-2xl flex justify-between items-center mb-6 py-4 border-b bg-white px-4 rounded-xl shadow-sm mt-2">
         <h1 className="text-xl font-bold text-indigo-600 flex items-center gap-2">
-           Sing By Heart 🎶
+           Choir Memory 🎶
         </h1>
         <div>
           {user ? (
@@ -163,7 +161,7 @@ function Home({ user }: { user: User | null }) {
               className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group"
             >
               <div className="flex justify-between items-start">
-                <div className="flex-1 pr-8"> {/* 우측 아이콘 공간 확보 */}
+                <div className="flex-1 pr-24"> {/* 버튼 공간 확보를 위해 패딩 증가 */}
                   <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 flex-wrap">
                     {song.title}
                     {song.voice_part && (
@@ -174,8 +172,22 @@ function Home({ user }: { user: User | null }) {
                   </h3>
                 </div>
 
-                {/* 버튼 그룹 (공유하기 + 삭제하기) */}
+                {/* 버튼 그룹 (유튜브 + 공유 + 삭제) */}
                 <div className="flex gap-1 absolute top-4 right-4">
+                  
+                  {/* [추가] 유튜브 버튼 (링크가 있을 때만 표시) */}
+                  {song.youtube_url && (
+                    <button
+                      onClick={(e) => handleOpenYoutube(e, song.youtube_url)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition"
+                      title="유튜브 영상 보기"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                      </svg>
+                    </button>
+                  )}
+
                   {/* 공유하기 버튼 */}
                   <button
                     onClick={(e) => handleShare(e, song.song_id, song.title)}
@@ -187,7 +199,7 @@ function Home({ user }: { user: User | null }) {
                     </svg>
                   </button>
 
-                  {/* [추가] 삭제 버튼 (작성자 본인 OR 관리자에게만 보임) */}
+                  {/* 삭제 버튼 */}
                   {user && (user.id === song.created_by || isAdmin) && (
                     <button
                       onClick={(e) => handleDelete(e, song.song_id)}
@@ -216,7 +228,6 @@ function Home({ user }: { user: User | null }) {
   );
 }
 
-// 2. 전체 앱 라우터 설정
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
 

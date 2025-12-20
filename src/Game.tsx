@@ -48,8 +48,7 @@ export default function Game() {
 
       setSongTitle(song.title);
       
-      // 1. 줄바꿈을 유지하기 위한 파싱 로직
-      const lines = song.lyrics_content.split('\n'); // 엔터 기준으로 줄 나누기
+      const lines = song.lyrics_content.split('\n');
       const tempAllWords: WordObj[] = [];
 
       lines.forEach((line: string, lineIndex: number) => {
@@ -75,7 +74,6 @@ export default function Game() {
         }
       });
 
-      // 2. 빈칸 뚫기 로직
       const difficultyRatio = (song.difficulty * 8) / 100;
       
       const candidateIndices = tempAllWords
@@ -86,7 +84,6 @@ export default function Game() {
       const shuffled = candidateIndices.sort(() => 0.5 - Math.random());
       const selectedIndices = new Set(shuffled.slice(0, targetBlankCount));
 
-      // 3. 최종 데이터 확정
       const finalWords = tempAllWords.map((w, index) => {
         if (w.isNewline) return w;
 
@@ -121,7 +118,8 @@ export default function Game() {
     setWords(newWords);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
+  // [수정] _currentIndex 로 이름 변경하여 에러 해결
+  const handleKeyDown = (e: React.KeyboardEvent, _currentIndex: number) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       for (let i = 0; i < inputRefs.current.length; i++) {
@@ -155,9 +153,8 @@ export default function Game() {
     setGameState('finished');
   };
 
-  // [추가] 결과 공유하기 함수
   const handleResultShare = async () => {
-    const shareUrl = window.location.href; // 현재 주소 그대로 사용
+    const shareUrl = window.location.href;
     const shareData = {
       title: 'Choir Memory Game',
       text: `🎵 [${songTitle}] 가사 암기 도전! 제 점수는 ${score}점입니다. 당신도 도전해보세요!`,
@@ -191,7 +188,6 @@ export default function Game() {
         {gameState === 'playing' ? (
           <div className="flex flex-wrap gap-2 items-center leading-loose content-start">
             {words.map((word, idx) => {
-              // 줄바꿈 처리
               if (word.isNewline) {
                 return <div key={idx} className="basis-full h-2"></div>;
               }
@@ -218,7 +214,6 @@ export default function Game() {
             })}
           </div>
         ) : (
-          // [수정] 결과 화면: 공유하기 버튼 추가 및 레이아웃 개선
           <div className="text-center py-10">
             <h2 className="text-3xl font-bold mb-4">
               {score === 100 ? '🎉 완벽합니다!' : '수고하셨습니다!'}
@@ -226,7 +221,6 @@ export default function Game() {
             <div className="text-6xl font-black text-indigo-600 mb-6">{score}점</div>
             <p className="text-gray-500 mb-8">소요 시간: {Math.floor(timeElapsed / 60)}분 {timeElapsed % 60}초</p>
             
-            {/* 버튼 영역 */}
             <div className="flex flex-col gap-3 justify-center w-full max-w-xs mx-auto">
                 <div className="flex gap-3">
                   <button 
@@ -243,7 +237,6 @@ export default function Game() {
                   </button>
                 </div>
 
-                {/* 공유하기 버튼 (강조) */}
                 <button
                   onClick={handleResultShare}
                   className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 font-bold flex items-center justify-center gap-2"
@@ -255,7 +248,6 @@ export default function Game() {
                 </button>
             </div>
             
-            {/* 오답 노트 */}
             {score < 100 && (
                <div className="mt-8 text-left bg-red-50 p-4 rounded-lg">
                  <h3 className="font-bold text-red-800 mb-2">💡 오답 체크</h3>

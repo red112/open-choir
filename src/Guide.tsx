@@ -116,8 +116,14 @@ export default function Guide() {
       <footer className="mt-12 text-center text-xs text-gray-400 space-y-2 pb-8">
         <p>&copy; 2025 Sing by Heart. All rights reserved.</p>
         <div className="flex justify-center gap-4">
-          <span className="cursor-pointer hover:underline">이용약관</span>
-          <span className="cursor-pointer hover:underline">개인정보처리방침</span>
+            {/* navigate를 사용하여 이동하도록 수정 */}
+            <span onClick={() => navigate('/terms')} className="cursor-pointer hover:underline hover:text-gray-600">
+            이용약관
+            </span>
+            <span className="text-gray-300">|</span>
+            <span onClick={() => navigate('/privacy')} className="cursor-pointer hover:underline hover:text-gray-600">
+            개인정보처리방침
+            </span>
         </div>
       </footer>
     </div>

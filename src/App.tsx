@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import CreateSong from './CreateSong';
 import Game from './Game';
 import Guide from './Guide'; // 상단에 추가
+import Terms from './Terms';    // 상단 import 추가
+import Privacy from './Privacy'; // 상단 import 추가
 
 // 1. 홈 화면 컴포넌트
 function Home({ user }: { user: User | null }) {
@@ -243,6 +245,8 @@ export default function App() {
         <Route path="/edit/:songId" element={<CreateSong />} />
         <Route path="/game/:songId" element={<Game />} /> 
         <Route path="/guide" element={<Guide />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
       </Routes>
     </BrowserRouter>
   );

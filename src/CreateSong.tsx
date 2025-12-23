@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { useNavigate, useParams } from 'react-router-dom'; // useParams 추가
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function CreateSong() {
   const navigate = useNavigate();
-  const { songId } = useParams(); // URL에서 songId (수정 모드일 때만 존재)
-  const isEditMode = Boolean(songId); // 수정 모드인지 확인하는 플래그
+  const { songId } = useParams();
+  const isEditMode = Boolean(songId);
 
   const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(false); // 데이터 불러오는 중
+  const [dataLoading, setDataLoading] = useState(false);
 
   const [title, setTitle] = useState('');
   const [lyrics, setLyrics] = useState('');
@@ -16,11 +16,14 @@ export default function CreateSong() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [voicePart, setVoicePart] = useState('');
   
+  // [추가] 완료 후 팝업 처리를 위한 상태 변수
+  const [showModal, setShowModal] = useState(false);
+  const [savedSongId, setSavedSongId] = useState('');
+  const [savedSongTitle, setSavedSongTitle] = useState('');
+
   const VOICE_PARTS = ['남성', '여성', '소프라노', '메조', '알토', '테너', '바리톤', '베이스'];
 
-  // 1. 초기화 및 수정 모드일 때 데이터 불러오기
   useEffect(() => {
-    // 로그인 체크
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         alert('로그인이 필요한 서비스입니다.');
@@ -28,7 +31,6 @@ export default function CreateSong() {
       }
     });
 
-    // 수정 모드라면 기존 데이터 Fetch
     if (isEditMode && songId) {
       fetchSongData();
     }
@@ -46,7 +48,6 @@ export default function CreateSong() {
       alert('노래 정보를 불러올 수 없습니다.');
       navigate('/');
     } else {
-      // 받아온 데이터로 Form 채우기
       setTitle(data.title);
       setLyrics(data.lyrics_content);
       setDifficulty(String(data.difficulty));
@@ -74,31 +75,34 @@ export default function CreateSong() {
         difficulty: parseInt(difficulty),
         youtube_url: youtubeUrl,
         voice_part: voicePart,
-        // created_by는 수정 시에는 업데이트하지 않음 (보안)
         ...(isEditMode ? {} : { created_by: user.id, play_count: 0 }) 
       };
 
-      let error;
+      let result;
 
       if (isEditMode) {
-        // [수정 모드] Update 실행
-        const result = await supabase
+        // [수정] update 후 결과 데이터를 받아오도록 .select() 추가
+        result = await supabase
           .from('songs')
           .update(songData)
-          .eq('song_id', songId);
-        error = result.error;
+          .eq('song_id', songId)
+          .select()
+          .single();
       } else {
-        // [등록 모드] Insert 실행
-        const result = await supabase
+        // [수정] insert 후 결과 데이터를 받아오도록 .select() 추가
+        result = await supabase
           .from('songs')
-          .insert([songData]);
-        error = result.error;
+          .insert([songData])
+          .select()
+          .single();
       }
 
-      if (error) throw error;
+      if (result.error) throw result.error;
 
-      alert(isEditMode ? '수정되었습니다!' : '노래가 등록되었습니다! 🎶');
-      navigate('/');
+      // 성공 시 바로 이동하지 않고 모달 띄우기
+      setSavedSongId(result.data.song_id);
+      setSavedSongTitle(result.data.title);
+      setShowModal(true); 
 
     } catch (error: any) {
       console.error('Error:', error);
@@ -108,16 +112,38 @@ export default function CreateSong() {
     }
   };
 
+  // [추가] 팝업에서 공유하기 버튼 클릭 시
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/game/${savedSongId}`;
+    const shareData = {
+      title: 'Sing by Heart',
+      text: `🎵 [${savedSongTitle}] 가사 암기 게임에 도전해보세요!`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('주소가 복사되었습니다! 카톡방에 붙여넣기 하세요.');
+      }
+    } catch (err) {
+      console.error('공유 실패:', err);
+    }
+  };
+
   if (dataLoading) return <div className="p-10 text-center">데이터 불러오는 중...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 flex justify-center">
+    <div className="min-h-screen bg-gray-50 p-4 flex justify-center relative">
       <div className="w-full max-w-lg bg-white p-6 rounded-xl shadow-md">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
           {isEditMode ? '노래 수정하기 ✏️' : '새 노래 등록하기 🎤'}
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* (기존 입력 폼들은 동일함) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">노래 제목</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="제목을 입력하세요" />
@@ -129,14 +155,14 @@ export default function CreateSong() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">난이도 (1: 쉬움 ~ 5: 어려움)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">난이도</label>
             <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg bg-white">
               {[1, 2, 3, 4, 5].map(num => (<option key={num} value={num}>Level {num}</option>))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">성부 (선택)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">성부</label>
             <select value={voicePart} onChange={(e) => setVoicePart(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
               <option value="">선택 안 함 (전체/공통)</option>
               {VOICE_PARTS.map((part) => (<option key={part} value={part}>{part}</option>))}
@@ -155,6 +181,45 @@ export default function CreateSong() {
           <button type="button" onClick={() => navigate('/')} className="w-full py-3 text-gray-600 font-medium hover:bg-gray-100 rounded-lg">취소</button>
         </form>
       </div>
+
+      {/* [추가] 완료 모달 (팝업) */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center animate-fade-in-up">
+            <div className="text-5xl mb-4">🎉</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              {isEditMode ? '수정이 완료되었습니다!' : '노래 등록 성공!'}
+            </h3>
+            <p className="text-gray-500 mb-6">이제 무엇을 하시겠습니까?</p>
+
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => navigate(`/game/${savedSongId}`)}
+                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 shadow"
+              >
+                🎮 바로 게임하기
+              </button>
+              
+              <button 
+                onClick={handleShare}
+                className="w-full bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 shadow flex items-center justify-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-1.964 2.25 2.25 0 0 0-3.933 1.964Z" />
+                </svg>
+                친구에게 공유하기
+              </button>
+              
+              <button 
+                onClick={() => navigate('/')}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-200"
+              >
+                목록으로 이동
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -135,23 +135,36 @@ export default function Game() {
     }
   };
 
-  const finishGame = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    
-    let correctCount = 0;
-    let totalBlanks = 0;
+// src/Game.tsx 내부 finishGame 함수
 
-    words.forEach(w => {
-      if (w.isBlank) {
-        totalBlanks++;
-        if (normalizeText(w.userInput) === w.clean) correctCount++;
-      }
-    });
+const finishGame = async () => {
+  if (timerRef.current) clearInterval(timerRef.current);
+  
+  let correctCount = 0;
+  let totalBlanks = 0;
 
-    const finalScore = totalBlanks === 0 ? 100 : Math.round((correctCount / totalBlanks) * 100);
-    setScore(finalScore);
-    setGameState('finished');
-  };
+  words.forEach(w => {
+    if (w.isBlank) {
+      totalBlanks++;
+      if (normalizeText(w.userInput) === w.clean) correctCount++;
+    }
+  });
+
+  const finalScore = totalBlanks === 0 ? 100 : Math.round((correctCount / totalBlanks) * 100);
+  setScore(finalScore);
+  setGameState('finished');
+
+  // [수정] DB 함수(RPC) 호출로 변경
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      // rpc('함수이름', { 매개변수 })
+      await supabase.rpc('update_recent_songs', { song_id: songId });
+    }
+  } catch (err) {
+    console.error('기록 저장 실패:', err);
+  }
+};
 
   const handleResultShare = async () => {
     const shareUrl = window.location.href;

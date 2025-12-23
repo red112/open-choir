@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import CreateSong from './CreateSong';
 import Game from './Game';
+import Guide from './Guide'; // 상단에 추가
 
 // 1. 홈 화면 컴포넌트
 function Home({ user }: { user: User | null }) {
@@ -115,6 +116,9 @@ function Home({ user }: { user: User | null }) {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
       <header className="w-full max-w-2xl flex justify-between items-center mb-4 py-4 border-b bg-white px-4 rounded-xl shadow-sm mt-2">
         <h1 className="text-xl font-bold text-indigo-600 flex items-center gap-2">Sing by Heart 🎶</h1>
+        <button onClick={() => navigate('/guide')} className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded ml-2 hover:bg-gray-200">
+          ❓ 사용법
+        </button>
         <div>
           {user ? (
             <div className="flex items-center gap-3">
@@ -238,6 +242,7 @@ export default function App() {
         <Route path="/create" element={<CreateSong />} />
         <Route path="/edit/:songId" element={<CreateSong />} />
         <Route path="/game/:songId" element={<Game />} /> 
+        <Route path="/guide" element={<Guide />} />
       </Routes>
     </BrowserRouter>
   );

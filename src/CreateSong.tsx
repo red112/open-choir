@@ -16,7 +16,6 @@ export default function CreateSong() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [voicePart, setVoicePart] = useState('');
   
-  // [추가] 완료 후 팝업 처리를 위한 상태 변수
   const [showModal, setShowModal] = useState(false);
   const [savedSongId, setSavedSongId] = useState('');
   const [savedSongTitle, setSavedSongTitle] = useState('');
@@ -38,13 +37,15 @@ export default function CreateSong() {
 
   async function fetchSongData() {
     setDataLoading(true);
+    // .single() 대신 .maybeSingle() 사용 (데이터 없어도 에러 안 남)
     const { data, error } = await supabase
       .from('songs')
       .select('*')
       .eq('song_id', songId)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
+      console.error(error);
       alert('노래 정보를 불러올 수 없습니다.');
       navigate('/');
     } else {
@@ -78,30 +79,41 @@ export default function CreateSong() {
         ...(isEditMode ? {} : { created_by: user.id, play_count: 0 }) 
       };
 
-      let result;
+      let data;
+      let error;
 
       if (isEditMode) {
-        // [수정] update 후 결과 데이터를 받아오도록 .select() 추가
-        result = await supabase
+        // [수정] .select()만 호출하고 결과 배열에서 꺼내는 방식으로 변경
+        const res = await supabase
           .from('songs')
           .update(songData)
           .eq('song_id', songId)
-          .select()
-          .single();
+          .select();
+        
+        data = res.data;
+        error = res.error;
       } else {
-        // [수정] insert 후 결과 데이터를 받아오도록 .select() 추가
-        result = await supabase
+        // [등록]
+        const res = await supabase
           .from('songs')
           .insert([songData])
-          .select()
-          .single();
+          .select();
+          
+        data = res.data;
+        error = res.error;
       }
 
-      if (result.error) throw result.error;
+      if (error) throw error;
+      
+      // 배열이 비어있는지 확인 (RLS 문제 등)
+      if (!data || data.length === 0) {
+        throw new Error('저장은 되었으나 데이터를 반환받지 못했습니다. 목록에서 확인해주세요.');
+      }
 
-      // 성공 시 바로 이동하지 않고 모달 띄우기
-      setSavedSongId(result.data.song_id);
-      setSavedSongTitle(result.data.title);
+      const savedItem = data[0]; // 배열의 첫 번째 요소 사용
+
+      setSavedSongId(savedItem.song_id);
+      setSavedSongTitle(savedItem.title);
       setShowModal(true); 
 
     } catch (error: any) {
@@ -112,7 +124,6 @@ export default function CreateSong() {
     }
   };
 
-  // [추가] 팝업에서 공유하기 버튼 클릭 시
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/game/${savedSongId}`;
     const shareData = {
@@ -143,7 +154,6 @@ export default function CreateSong() {
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* (기존 입력 폼들은 동일함) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">노래 제목</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="제목을 입력하세요" />
@@ -182,7 +192,6 @@ export default function CreateSong() {
         </form>
       </div>
 
-      {/* [추가] 완료 모달 (팝업) */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center animate-fade-in-up">

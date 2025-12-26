@@ -10,18 +10,16 @@ export default function CreateSong() {
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   
-  // 폼 데이터
   const [title, setTitle] = useState('');
   const [lyrics, setLyrics] = useState('');
   const [difficulty, setDifficulty] = useState('1');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [voicePart, setVoicePart] = useState('');
   
-  // 모달 및 이슈 상태
   const [showModal, setShowModal] = useState(false);
   const [savedSongId, setSavedSongId] = useState('');
   const [savedSongTitle, setSavedSongTitle] = useState('');
-  const [issues, setIssues] = useState<any[]>([]); // [NEW] 수정 요청 목록
+  const [issues, setIssues] = useState<any[]>([]);
 
   const VOICE_PARTS = ['남성', '여성', '소프라노', '메조', '알토', '테너', '바리톤', '베이스'];
 
@@ -31,7 +29,7 @@ export default function CreateSong() {
     });
     if (isEditMode && songId) {
       fetchSongData();
-      fetchIssues(); // [NEW] 이슈 불러오기
+      fetchIssues();
     }
   }, [songId]);
 
@@ -46,13 +44,11 @@ export default function CreateSong() {
     setDataLoading(false);
   }
 
-  // [NEW] 수정 요청 목록 불러오기
   async function fetchIssues() {
     const { data } = await supabase.from('song_issues').select('*').eq('song_id', songId).order('created_at', { ascending: true });
     setIssues(data || []);
   }
 
-  // [NEW] 수정 요청 삭제
   async function deleteIssue(issueId: string) {
     if(!confirm('처리 완료 하셨나요? 삭제합니다.')) return;
     const { error } = await supabase.from('song_issues').delete().eq('issue_id', issueId);
@@ -78,7 +74,26 @@ export default function CreateSong() {
     } catch (error: any) { alert(error.message); } finally { setLoading(false); }
   };
 
-  const handleShare = async () => { /* (기존 공유 로직과 동일) */ };
+  // [사용됨] savedSongTitle 변수를 사용하여 공유 텍스트 완성
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/game/${savedSongId}`;
+    const shareData = {
+      title: 'Sing by Heart',
+      text: `🎵 [${savedSongTitle}] 가사 암기 게임에 도전해보세요!`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('주소가 복사되었습니다! 카톡방에 붙여넣기 하세요.');
+      }
+    } catch (err) {
+      console.error('공유 실패:', err);
+    }
+  };
 
   if (dataLoading) return <div>Loading...</div>;
 
@@ -98,12 +113,10 @@ export default function CreateSong() {
           <button type="button" onClick={() => navigate('/')} className="w-full py-3 bg-gray-100 text-gray-600 font-bold rounded-lg">취소</button>
         </form>
 
-        {/* [NEW] 수정 요청 목록 (수정 모드일 때만 표시) */}
+        {/* 수정 요청 목록 */}
         {isEditMode && issues.length > 0 && (
           <div className="mt-10 border-t pt-6">
-            <h3 className="text-lg font-bold text-red-600 mb-4 flex items-center gap-2">
-              🚨 수정 요청 사항 ({issues.length})
-            </h3>
+            <h3 className="text-lg font-bold text-red-600 mb-4 flex items-center gap-2">🚨 수정 요청 사항 ({issues.length})</h3>
             <div className="space-y-3">
               {issues.map((issue) => (
                 <div key={issue.issue_id} className="bg-red-50 p-3 rounded border border-red-100 flex justify-between items-start">
@@ -116,7 +129,7 @@ export default function CreateSong() {
         )}
       </div>
       
-      {showModal && ( /* (기존 모달 코드와 동일) */ 
+      {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center">
             <h3 className="text-xl font-bold mb-4">{isEditMode ? '수정 완료!' : '등록 성공!'}</h3>

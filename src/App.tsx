@@ -1,5 +1,3 @@
-// src/App.tsx (기존 코드에 덮어쓰기)
-
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
@@ -17,7 +15,6 @@ function Home({ user }: { user: User | null }) {
   const [recentSongs, setRecentSongs] = useState<any[]>([]);
   
   const [isAdmin, setIsAdmin] = useState(false);
-  // [수정] 탭에 'my' 추가
   const [activeTab, setActiveTab] = useState<'all' | 'recent' | 'my'>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,10 +35,9 @@ function Home({ user }: { user: User | null }) {
   }
 
   async function fetchSongs() {
-    // [수정] song_issues 테이블을 조인해서 제보가 있는지 확인 (count)
     const { data, error } = await supabase
       .from('songs')
-      .select('*, song_issues(count)') // song_issues의 갯수를 가져옴
+      .select('*, song_issues(count)')
       .order('created_at', { ascending: false });
       
     if (!error) setSongs(data || []);
@@ -56,7 +52,6 @@ function Home({ user }: { user: User | null }) {
     }
 
     const songIds = profileData.recent_songs;
-    // 최근 목록에서도 이슈 여부 확인
     const { data: songsData, error: songsError } = await supabase
       .from('songs')
       .select('*, song_issues(count)')
@@ -74,7 +69,6 @@ function Home({ user }: { user: User | null }) {
   const getDisplaySongs = () => {
     let targetList: any[] = [];
     
-    // [수정] 탭 로직 분기
     if (activeTab === 'recent') targetList = recentSongs;
     else if (activeTab === 'my') targetList = songs.filter(s => user && s.created_by === user.id);
     else targetList = songs;
@@ -111,7 +105,13 @@ function Home({ user }: { user: User | null }) {
     if (!window.confirm('정말로 삭제하시겠습니까?')) return;
     try { const { error } = await supabase.from('songs').delete().eq('song_id', songId); if (error) throw error; alert('삭제되었습니다.'); fetchSongs(); } catch (err) { alert('삭제 실패'); }
   };
-  const handleOpenYoutube = (e: React.MouseEvent, url: string) => { e.stopPropagation(); window.open(url, '_blank', 'noopener,noreferrer'); };
+  
+  // [사용됨] 유튜브 링크 열기
+  const handleOpenYoutube = (e: React.MouseEvent, url: string) => { 
+    e.stopPropagation(); 
+    window.open(url, '_blank', 'noopener,noreferrer'); 
+  };
+  
   const handleEdit = (e: React.MouseEvent, songId: string) => { e.stopPropagation(); navigate(`/edit/${songId}`); };
 
   const displayList = getDisplaySongs();
@@ -135,7 +135,6 @@ function Home({ user }: { user: User | null }) {
         </div>
       </header>
       
-      {/* 탭 버튼 3개 */}
       <div className="w-full max-w-2xl flex border-b border-gray-300 mb-4">
         <button onClick={() => setActiveTab('all')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'all' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>전체</button>
         <button onClick={() => setActiveTab('recent')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'recent' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>최근 연습</button>
@@ -157,7 +156,6 @@ function Home({ user }: { user: User | null }) {
         {user && displayList.length === 0 && <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">목록이 비어있습니다.</div>}
 
         {displayList.map((song) => {
-          // [수정] 수정 요청이 있는지 확인 (song_issues 배열의 0번째 요소인 count 확인)
           const hasIssues = song.song_issues && song.song_issues[0] && song.song_issues[0].count > 0;
           
           return (
@@ -170,10 +168,17 @@ function Home({ user }: { user: User | null }) {
                   </h3>
                 </div>
                 <div className="flex gap-1 absolute top-4 right-4">
+                  {/* [복구] 유튜브 버튼 (여기서 handleOpenYoutube 사용) */}
+                  {song.youtube_url && (
+                    <button onClick={(e) => handleOpenYoutube(e, song.youtube_url)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full" title="유튜브 보기">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
+                    </button>
+                  )}
+                  
                   <button onClick={(e) => handleShare(e, song.song_id, song.title)} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full" title="공유하기"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-1.964 2.25 2.25 0 0 0-3.933 1.964Z" /></svg></button>
+                  
                   {user && (user.id === song.created_by || isAdmin) && (
                     <>
-                      {/* [수정] 수정 버튼: 이슈가 있으면 빨간색, 없으면 파란색 */}
                       <button onClick={(e) => handleEdit(e, song.song_id)} className={`p-2 rounded-full ${hasIssues ? 'text-red-500 bg-red-50 hover:bg-red-100 animate-pulse' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={hasIssues ? "수정 요청이 있습니다!" : "수정하기"}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
                       </button>

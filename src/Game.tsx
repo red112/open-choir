@@ -70,20 +70,40 @@ export default function Game() {
     }
   };
 
+
   const finishGame = async () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    let correctCount = 0; let totalBlanks = 0;
-    words.forEach(w => { if (w.isBlank) { totalBlanks++; if (normalizeText(w.userInput) === w.clean) correctCount++; } });
+    
+    let correctCount = 0;
+    let totalBlanks = 0;
+
+    words.forEach(w => {
+      if (w.isBlank) {
+        totalBlanks++;
+        if (normalizeText(w.userInput) === w.clean) correctCount++;
+      }
+    });
+
     const finalScore = totalBlanks === 0 ? 100 : Math.round((correctCount / totalBlanks) * 100);
     setScore(finalScore);
     setGameState('finished');
 
     try {
+      // 1. [기존] 로그인 유저라면 '최근 연습 목록' 갱신
       const { data: { user } } = await supabase.auth.getUser();
       if (user) await supabase.rpc('update_recent_songs', { song_id: songId });
-    } catch (err) { console.error('기록 저장 실패:', err); }
+
+      // 2. [추가] 로그인 여부 상관없이 '일일 전체 플레이 횟수' +1
+      await supabase.rpc('increment_play_count');
+
+    } catch (err) { 
+      console.error('기록 저장 실패:', err); 
+    }
   };
-  
+
+
+
+
   const handleResultShare = async () => {
      const shareUrl = window.location.href;
      const shareData = { title: 'Sing by Heart', text: `🎵 [${songTitle}] 가사 암기 도전! 제 점수는 ${score}점입니다.`, url: shareUrl };

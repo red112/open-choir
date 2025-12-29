@@ -1,20 +1,22 @@
-// src/Game.tsx
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { useTranslation } from 'react-i18next'; // 추가
 
 interface WordObj { original: string; clean: string; isBlank: boolean; userInput: string; isNewline?: boolean; }
 
 export default function Game() {
-  const { songId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation(); // 훅
+  const { songId } = useParams();
+
   const [loading, setLoading] = useState(true);
   const [songTitle, setSongTitle] = useState('');
   const [words, setWords] = useState<WordObj[]>([]);
   const [gameState, setGameState] = useState<'playing' | 'finished'>('playing');
   const [score, setScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [reportText, setReportText] = useState(''); // [NEW] 수정 요청 내용
+  const [reportText, setReportText] = useState('');
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timerRef = useRef<number | null>(null);
@@ -30,7 +32,7 @@ export default function Game() {
       const { data: song, error } = await supabase.from('songs').select('*').eq('song_id', songId).single();
       if (error || !song) throw new Error('Load failed');
       setSongTitle(song.title);
-      
+
       const lines = song.lyrics_content.split('\n');
       const tempAllWords: WordObj[] = [];
       lines.forEach((line: string, lineIndex: number) => {
@@ -62,70 +64,54 @@ export default function Game() {
       e.preventDefault();
       for (let i = 0; i < inputRefs.current.length; i++) {
         if (inputRefs.current[i] === e.currentTarget) {
-           if (i + 1 < inputRefs.current.length) inputRefs.current[i + 1]?.focus();
-           else inputRefs.current[i]?.blur();
-           break;
+          if (i + 1 < inputRefs.current.length) inputRefs.current[i + 1]?.focus();
+          else inputRefs.current[i]?.blur();
+          break;
         }
       }
     }
   };
 
-
   const finishGame = async () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    
-    let correctCount = 0;
-    let totalBlanks = 0;
-
-    words.forEach(w => {
-      if (w.isBlank) {
-        totalBlanks++;
-        if (normalizeText(w.userInput) === w.clean) correctCount++;
-      }
-    });
-
+    let correctCount = 0; let totalBlanks = 0;
+    words.forEach(w => { if (w.isBlank) { totalBlanks++; if (normalizeText(w.userInput) === w.clean) correctCount++; } });
     const finalScore = totalBlanks === 0 ? 100 : Math.round((correctCount / totalBlanks) * 100);
     setScore(finalScore);
     setGameState('finished');
 
     try {
-      // 1. [기존] 로그인 유저라면 '최근 연습 목록' 갱신
       const { data: { user } } = await supabase.auth.getUser();
       if (user) await supabase.rpc('update_recent_songs', { song_id: songId });
-
-      // 2. [추가] 로그인 여부 상관없이 '일일 전체 플레이 횟수' +1
       await supabase.rpc('increment_play_count');
-
-    } catch (err) { 
-      console.error('기록 저장 실패:', err); 
-    }
+    } catch (err) { console.error(err); }
   };
-
-
-
 
   const handleResultShare = async () => {
-     const shareUrl = window.location.href;
-     const shareData = { title: 'Sing by Heart', text: `🎵 [${songTitle}] 가사 암기 도전! 제 점수는 ${score}점입니다.`, url: shareUrl };
-     if (navigator.share) await navigator.share(shareData);
-     else { await navigator.clipboard.writeText(shareUrl); alert('복사됨'); }
+    const shareUrl = window.location.href;
+    const shareData = { title: t('app.title'), text: t('game.share_msg', { title: songTitle, score }), url: shareUrl };
+    if (navigator.share) await navigator.share(shareData);
+    else { await navigator.clipboard.writeText(shareUrl); alert(t('game.copy_complete')); }
   };
 
-  // [NEW] 수정 요청 등록
   const handleSubmitReport = async () => {
     if (!reportText.trim()) return alert('내용을 입력해주세요.');
-    
-    // 갯수 제한 체크
     const { count } = await supabase.from('song_issues').select('*', { count: 'exact', head: true }).eq('song_id', songId);
     if (count !== null && count >= 5) return alert('수정 요청이 너무 많습니다. (최대 5개)');
-
     const { error } = await supabase.from('song_issues').insert({ song_id: songId, issue_content: reportText });
     if (error) alert('등록 실패');
-    else { alert('수정 요청이 등록되었습니다. 작성자가 확인 후 반영할 것입니다.'); setReportText(''); }
+    else { alert(t('game.report_sent')); setReportText(''); }
   };
 
-  if (loading) return <div>Loading...</div>;
-  
+  const handleEmailReport = () => {
+    const adminEmail = "wonil.shim.kt@gmail.com";
+    const subject = `[Error Report] ${songTitle}`;
+    const body = `Title: ${songTitle}\nID: ${songId}\n\n[Details]\n`;
+    window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  if (loading) return <div>{t('game.loading')}</div>;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
       <div className="w-full max-w-2xl bg-white p-4 rounded-xl shadow-sm mb-4 flex justify-between items-center sticky top-0 z-10 border-b border-gray-200">
@@ -143,49 +129,39 @@ export default function Game() {
           </div>
         ) : (
           <div className="text-center py-5">
-            <h2 className="text-3xl font-bold mb-4">{score === 100 ? '🎉 완벽합니다!' : '수고하셨습니다!'}</h2>
-            <div className="text-6xl font-black text-indigo-600 mb-6">{score}점</div>
-            
-            {/* [수정] 결과 상세 보기: 전체 텍스트에서 정답/오답 표시 */}
+            <h2 className="text-3xl font-bold mb-4">{score === 100 ? t('game.perfect') : t('game.good_job')}</h2>
+            <div className="text-6xl font-black text-indigo-600 mb-6">{score}{t('game.score')}</div>
+
             <div className="text-left bg-gray-50 p-4 rounded-lg mb-8 leading-loose">
-               <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">📖 결과 상세 보기</h3>
-               <div className="flex flex-wrap gap-1">
-                 {words.map((w, i) => {
-                   if (w.isNewline) return <div key={i} className="basis-full h-1"></div>;
-                   if (!w.isBlank) return <span key={i} className="text-gray-500">{w.original}</span>;
-                   
-                   const isCorrect = normalizeText(w.userInput) === w.clean;
-                   return (
-                     <span key={i} className={`font-bold ${isCorrect ? 'text-blue-600' : 'text-red-500'}`}>
-                       {isCorrect ? w.original : <>{w.userInput || '(공백)'} <span className="text-xs text-gray-400 font-normal">({w.original})</span></>}
-                     </span>
-                   );
-                 })}
-               </div>
+              <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">{t('game.result_detail')}</h3>
+              <div className="flex flex-wrap gap-1">
+                {words.map((w, i) => {
+                  if (w.isNewline) return <div key={i} className="basis-full h-1"></div>;
+                  if (!w.isBlank) return <span key={i} className="text-gray-500">{w.original}</span>;
+                  const isCorrect = normalizeText(w.userInput) === w.clean;
+                  return (<span key={i} className={`font-bold ${isCorrect ? 'text-blue-600' : 'text-red-500'}`}>{isCorrect ? w.original : <>{w.userInput || '( )'} <span className="text-xs text-gray-400 font-normal">({w.original})</span></>}</span>);
+                })}
+              </div>
             </div>
 
             <div className="flex flex-col gap-3 justify-center w-full max-w-xs mx-auto mb-10">
-                <div className="flex gap-3"><button onClick={() => window.location.reload()} className="flex-1 bg-indigo-500 text-white py-3 rounded-lg font-bold">다시 하기</button><button onClick={() => navigate('/')} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold">목록으로</button></div>
-                <button onClick={handleResultShare} className="w-full bg-green-500 text-white py-3 rounded-lg font-bold">공유하기</button>
+              <div className="flex gap-3"><button onClick={() => window.location.reload()} className="flex-1 bg-indigo-500 text-white py-3 rounded-lg font-bold">{t('game.btn_retry')}</button><button onClick={() => navigate('/')} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold">{t('game.btn_list')}</button></div>
+              <button onClick={handleResultShare} className="w-full bg-green-500 text-white py-3 rounded-lg font-bold">{t('game.btn_share')}</button>
             </div>
 
-            {/* [NEW] 수정 요청 폼 */}
             <div className="border-t pt-6 text-left">
-              <h4 className="text-sm font-bold text-gray-600 mb-2">🚨 가사 오류 신고 / 수정 요청</h4>
-              <textarea 
-                value={reportText} 
-                onChange={(e) => setReportText(e.target.value)} 
-                placeholder="틀린 부분이나 수정할 내용을 적어주세요. (100자 이내)"
-                maxLength={100}
-                className="w-full p-2 border rounded text-sm h-20 mb-2"
-              ></textarea>
-              <button onClick={handleSubmitReport} className="w-full bg-gray-200 text-gray-700 py-2 rounded text-sm hover:bg-gray-300">수정 요청 보내기</button>
+              <h4 className="text-sm font-bold text-gray-600 mb-2">{t('game.report_title')}</h4>
+              <textarea value={reportText} onChange={(e) => setReportText(e.target.value)} placeholder={t('game.report_placeholder')} maxLength={100} className="w-full p-2 border rounded text-sm h-20 mb-2"></textarea>
+              <button onClick={handleSubmitReport} className="w-full bg-gray-200 text-gray-700 py-2 rounded text-sm hover:bg-gray-300">{t('game.report_btn')}</button>
+              <div className="text-center mt-2">
+                <button onClick={handleEmailReport} className="text-xs text-gray-400 underline hover:text-gray-600">{t('game.report_email_btn')}</button>
+              </div>
             </div>
           </div>
         )}
       </div>
-      {gameState === 'playing' && <div className="fixed bottom-6 w-full max-w-xs px-4"><button onClick={finishGame} className="w-full bg-indigo-600 text-white py-4 rounded-full shadow-xl text-xl font-bold">채점 하기 ✅</button></div>}
-      <div className={`w-full max-w-2xl mt-6 p-4 bg-gray-100 rounded text-center text-xs text-gray-400 ${gameState === 'playing' ? 'mb-24' : 'mb-6'}`}><p className="mb-2">광고 영역</p><div style={{ minHeight: '100px', background: '#eee' }}></div></div>
+      {gameState === 'playing' && <div className="fixed bottom-6 w-full max-w-xs px-4"><button onClick={finishGame} className="w-full bg-indigo-600 text-white py-4 rounded-full shadow-xl text-xl font-bold">{t('game.btn_check')}</button></div>}
+      <div className={`w-full max-w-2xl mt-6 p-4 bg-gray-100 rounded text-center text-xs text-gray-400 ${gameState === 'playing' ? 'mb-24' : 'mb-6'}`}><p className="mb-2">{t('app.ad_area')}</p><div style={{ minHeight: '100px', background: '#eee' }}></div></div>
     </div>
   );
 }

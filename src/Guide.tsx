@@ -8,7 +8,7 @@ export default function Guide() {
       {/* 상단 네비게이션 */}
       <div className="w-full max-w-2xl flex justify-between items-center mb-8 py-4">
         <h1 className="text-xl font-bold text-indigo-600 cursor-pointer" onClick={() => navigate('/')}>
-          Sing by Heart 🎶
+          Sing by Hearts 🎶
         </h1>
         <button onClick={() => navigate('/')} className="text-gray-500 hover:text-indigo-600 font-bold">
           ✕ 닫기
@@ -17,28 +17,28 @@ export default function Guide() {
 
       {/* 본문 콘텐츠 */}
       <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden">
-        
+
         {/* 헤더 이미지 영역 (센스있는 이모지로 대체) */}
         <div className="bg-indigo-600 p-8 text-center">
           <div className="text-6xl mb-4">🎓</div>
           <h2 className="text-3xl font-bold text-white mb-2">가사 암기의 신(神)이 되는 법</h2>
-          <p className="text-indigo-100">Sing by Heart 200% 활용 가이드</p>
+          <p className="text-indigo-100">Sing by Hearts 200% 활용 가이드</p>
         </div>
 
         <div className="p-6 space-y-8 text-gray-700 leading-relaxed">
-          
-        {/* 서문 */}
-        <section className="bg-indigo-50 p-6 rounded-lg border-l-4 border-indigo-500 shadow-sm">
+
+          {/* 서문 */}
+          <section className="bg-indigo-50 p-6 rounded-lg border-l-4 border-indigo-500 shadow-sm">
             <h3 className="font-bold text-lg text-indigo-800 mb-2">"악보만 은혜받고 있진 않나요?" 🤔</h3>
             <p className="font-medium text-gray-700 leading-relaxed">
-              아직도 콩나물(악보) 감옥에 갇혀 지휘자님 얼굴 한번 제대로 못 보고 계신가요?<br/><br/>
-              
-              🎵 <b>성가대원 왈:</b> 고개를 푹 숙이고 부르니 성도들이 받아야 할 <b>'은혜'</b>가 죄다 <b>악보 위로만 쏟아진다는</b> 슬픈 전설이... (악보만 성령 충만! 😭)<br/><br/>
+              아직도 콩나물(악보) 감옥에 갇혀 지휘자님 얼굴 한번 제대로 못 보고 계신가요?<br /><br />
 
-              🎵 <b>합창단원 왈:</b> 혹시 지휘자님 쳐다보는 게 부끄러우신가요? (설마... 싫어하시는 건 아니죠? 👀) 
-              다들 지휘를 안 보니 결국 <b>지휘자님이 여러분 노래 속도에 맞춰 지휘를 하는 기이한 주객전도</b> 상황까지!<br/><br/>
-              
-              이제 제발 고개를 드세요! <b>Sing by Heart</b>로 가사를 완벽히 외우고, 악보 탈출 넘버원! 지휘자와 눈빛을 교환하며 진짜 <b>'합창'</b>을 만들어봅시다.
+              🎵 <b>성가대원 왈:</b> 고개를 푹 숙이고 부르니 성도들이 받아야 할 <b>'은혜'</b>가 죄다 <b>악보 위로만 쏟아진다는</b> 슬픈 전설이... (악보만 성령 충만! 😭)<br /><br />
+
+              🎵 <b>합창단원 왈:</b> 혹시 지휘자님 쳐다보는 게 부끄러우신가요? (설마... 싫어하시는 건 아니죠? 👀)
+              다들 지휘를 안 보니 결국 <b>지휘자님이 여러분 노래 속도에 맞춰 지휘를 하는 기이한 주객전도</b> 상황까지!<br /><br />
+
+              이제 제발 고개를 드세요! <b>Sing by Hearts</b>로 가사를 완벽히 외우고, 악보 탈출 넘버원! 지휘자와 눈빛을 교환하며 진짜 <b>'합창'</b>을 만들어봅시다.
             </p>
           </section>
 
@@ -49,7 +49,7 @@ export default function Guide() {
               3초 만에 입장하기 🚀
             </h3>
             <p>
-              복잡한 회원가입? 저희는 그런 거 딱 질색입니다. 가지고 계신 <b>구글 아이디</b>로 딱 3초면 입장 완료!<br/>
+              복잡한 회원가입? 저희는 그런 거 딱 질색입니다. 가지고 계신 <b>구글 아이디</b>로 딱 3초면 입장 완료!<br />
               로그인하시면 '내가 등록한 노래'를 수정할 수 있고, '최근 연습한 곡'이 자동 저장됩니다.
             </p>
           </section>
@@ -103,7 +103,7 @@ export default function Guide() {
         {/* 하단 액션 버튼 */}
         <div className="bg-gray-50 p-6 text-center border-t">
           <p className="text-gray-600 mb-4">준비 되셨나요? 이제 시작해 보세요!</p>
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-indigo-700 transition transform hover:scale-105"
           >
@@ -111,19 +111,19 @@ export default function Guide() {
           </button>
         </div>
       </div>
-      
+
       {/* 저작권 및 개인정보 링크 (SEO 및 애드센스용) */}
       <footer className="mt-12 text-center text-xs text-gray-400 space-y-2 pb-8">
-        <p>&copy; 2025 Sing by Heart. All rights reserved.</p>
+        <p>&copy; 2025 Sing by Hearts. All rights reserved.</p>
         <div className="flex justify-center gap-4">
-            {/* navigate를 사용하여 이동하도록 수정 */}
-            <span onClick={() => navigate('/terms')} className="cursor-pointer hover:underline hover:text-gray-600">
+          {/* navigate를 사용하여 이동하도록 수정 */}
+          <span onClick={() => navigate('/terms')} className="cursor-pointer hover:underline hover:text-gray-600">
             이용약관
-            </span>
-            <span className="text-gray-300">|</span>
-            <span onClick={() => navigate('/privacy')} className="cursor-pointer hover:underline hover:text-gray-600">
+          </span>
+          <span className="text-gray-300">|</span>
+          <span onClick={() => navigate('/privacy')} className="cursor-pointer hover:underline hover:text-gray-600">
             개인정보처리방침
-            </span>
+          </span>
         </div>
       </footer>
     </div>

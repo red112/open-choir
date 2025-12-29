@@ -1,6 +1,6 @@
 {
     "app": {
-        "title": "Sing by Heart",
+        "title": "Sing by Hearts",
         "login": "Google Login",
         "logout": "Logout",
         "welcome": "Welcome",
@@ -74,15 +74,15 @@
     },
     "about": {
         "title": "Why We Sing",
-        "subtitle": "The Philosophy behind Sing by Heart",
+        "subtitle": "The Philosophy behind Sing by Hearts",
         "sec1_title": "🎼 Amateurs Deserve More Fun",
         "sec1_desc": "Singing in a choir as a hobby is wonderful. But dragging yourself to practice after a long day of work, faced with tiny scores and unfamiliar lyrics, can be stressful. The fear of making mistakes often overshadows the joy. We started with a question: <1>Can't the preparation process be as fun as a festival?</1>",
         "sec2_title": "👀 Eyes on the Conductor!",
         "sec2_desc": "Choral perfection comes from eye contact with the conductor. But if you don't memorize the lyrics, your eyes are trapped in the score, and your ears are closed. Have you ever gone blank when the stage lights hit? <1>Perfect memorization</1> is the only key to turning that fear into <3>excitement</3>.",
         "sec3_title": "🎮 Gamify Your Practice",
-        "sec3_desc": "Sing by Heart rejects boring rote memorization. We've introduced <1>game mechanics</1> where you fill in the blanks one by one. Beyond just memorizing, share your scores with fellow members and cheer each other on. It's not a lonely battle, but a <3>joyful journey of growing together</3>.",
+        "sec3_desc": "Sing by Hearts rejects boring rote memorization. We've introduced <1>game mechanics</1> where you fill in the blanks one by one. Beyond just memorizing, share your scores with fellow members and cheer each other on. It's not a lonely battle, but a <3>joyful journey of growing together</3>.",
         "sec4_title": "✨ Shine Brightest on Stage",
-        "sec4_desc": "Put down the score and lift your head. Follow the conductor's fingertips and listen to your colleagues' voices. For that thrilling moment, <1>Sing by Heart</1> will be your reliable pacemaker. Shall we enjoy it together?",
+        "sec4_desc": "Put down the score and lift your head. Follow the conductor's fingertips and listen to your colleagues' voices. For that thrilling moment, <1>Sing by Hearts</1> will be your reliable pacemaker. Shall we enjoy it together?",
         "banner_text": "We support your passion.",
         "btn_action": "Let's Sing"
     }

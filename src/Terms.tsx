@@ -6,7 +6,7 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
       <div className="w-full max-w-3xl bg-white p-8 rounded-xl shadow-lg">
-        
+
         <div className="flex justify-between items-center mb-8 border-b pb-4">
           <h1 className="text-2xl font-bold text-gray-800">이용약관</h1>
           <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-indigo-600 font-bold">
@@ -18,7 +18,7 @@ export default function Terms() {
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-2">제1조 (목적)</h2>
             <p>
-              본 약관은 'Sing by Heart'(이하 '서비스')가 제공하는 웹 기반 합창곡 가사 암기 게임 서비스의 이용과 관련하여, 
+              본 약관은 'Sing by Hearts'(이하 '서비스')가 제공하는 웹 기반 합창곡 가사 암기 게임 서비스의 이용과 관련하여,
               서비스와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
             </p>
           </section>

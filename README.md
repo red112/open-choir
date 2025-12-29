@@ -71,4 +71,4 @@ export default defineConfig([
   },
 ])
 ```
-"# Sing By Heart" 
+"# Sing By Hearts" 

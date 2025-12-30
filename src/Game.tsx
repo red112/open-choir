@@ -1,13 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
-import { useTranslation } from 'react-i18next'; // 추가
+import { useTranslation } from 'react-i18next';
+import AdBanner from './components/AdBanner';
 
 interface WordObj { original: string; clean: string; isBlank: boolean; userInput: string; isNewline?: boolean; }
 
 export default function Game() {
   const navigate = useNavigate();
-  const { t } = useTranslation(); // 훅
+  const { t } = useTranslation();
   const { songId } = useParams();
 
   const [loading, setLoading] = useState(true);
@@ -103,13 +104,6 @@ export default function Game() {
     else { alert(t('game.report_sent')); setReportText(''); }
   };
 
-  const handleEmailReport = () => {
-    const adminEmail = "wonil.shim.kt@gmail.com";
-    const subject = `[Error Report] ${songTitle}`;
-    const body = `Title: ${songTitle}\nID: ${songId}\n\n[Details]\n`;
-    window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
   if (loading) return <div>{t('game.loading')}</div>;
 
   return (
@@ -118,6 +112,7 @@ export default function Game() {
         <h1 className="font-bold text-lg truncate w-2/3">{songTitle}</h1>
         <div className="font-mono text-xl text-indigo-600 font-bold">⏱ {Math.floor(timeElapsed / 60)}:{(timeElapsed % 60).toString().padStart(2, '0')}</div>
       </div>
+
       <div className="w-full max-w-2xl bg-white p-6 rounded-xl shadow-lg text-lg">
         {gameState === 'playing' ? (
           <div className="flex flex-wrap gap-2 items-center leading-loose content-start">
@@ -129,9 +124,7 @@ export default function Game() {
           </div>
         ) : (
           <div className="text-center py-5">
-            <h2 className="text-3xl font-bold mb-4">{score === 100 ? t('game.perfect') : t('game.good_job')}</h2>
-            <div className="text-6xl font-black text-indigo-600 mb-6">{score}{t('game.score')}</div>
-
+            {/* 1. [순서 변경] 상세 결과(오답노트)를 가장 위에 배치 */}
             <div className="text-left bg-gray-50 p-4 rounded-lg mb-8 leading-loose">
               <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">{t('game.result_detail')}</h3>
               <div className="flex flex-wrap gap-1">
@@ -144,24 +137,31 @@ export default function Game() {
               </div>
             </div>
 
+            {/* 2. 점수 및 메시지 */}
+            <h2 className="text-3xl font-bold mb-4">{score === 100 ? t('game.perfect') : t('game.good_job')}</h2>
+            <div className="text-6xl font-black text-indigo-600 mb-6">{score}{t('game.score')}</div>
+
+            {/* 3. 버튼 그룹 */}
             <div className="flex flex-col gap-3 justify-center w-full max-w-xs mx-auto mb-10">
               <div className="flex gap-3"><button onClick={() => window.location.reload()} className="flex-1 bg-indigo-500 text-white py-3 rounded-lg font-bold">{t('game.btn_retry')}</button><button onClick={() => navigate('/')} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold">{t('game.btn_list')}</button></div>
               <button onClick={handleResultShare} className="w-full bg-green-500 text-white py-3 rounded-lg font-bold">{t('game.btn_share')}</button>
             </div>
 
+            {/* 4. 수정 요청 폼 (메일 링크 삭제됨) */}
             <div className="border-t pt-6 text-left">
               <h4 className="text-sm font-bold text-gray-600 mb-2">{t('game.report_title')}</h4>
               <textarea value={reportText} onChange={(e) => setReportText(e.target.value)} placeholder={t('game.report_placeholder')} maxLength={100} className="w-full p-2 border rounded text-sm h-20 mb-2"></textarea>
               <button onClick={handleSubmitReport} className="w-full bg-gray-200 text-gray-700 py-2 rounded text-sm hover:bg-gray-300">{t('game.report_btn')}</button>
-              <div className="text-center mt-2">
-                <button onClick={handleEmailReport} className="text-xs text-gray-400 underline hover:text-gray-600">{t('game.report_email_btn')}</button>
-              </div>
             </div>
           </div>
         )}
       </div>
+
       {gameState === 'playing' && <div className="fixed bottom-6 w-full max-w-xs px-4"><button onClick={finishGame} className="w-full bg-indigo-600 text-white py-4 rounded-full shadow-xl text-xl font-bold">{t('game.btn_check')}</button></div>}
-      <div className={`w-full max-w-2xl mt-6 p-4 bg-gray-100 rounded text-center text-xs text-gray-400 ${gameState === 'playing' ? 'mb-24' : 'mb-6'}`}><p className="mb-2">{t('app.ad_area')}</p><div style={{ minHeight: '100px', background: '#eee' }}></div></div>
+
+      <div className={`w-full max-w-2xl ${gameState === 'playing' ? 'mb-24' : 'mb-6'}`}>
+        <AdBanner />
+      </div>
     </div>
   );
 }

@@ -91,9 +91,10 @@ function Home({ user }: { user: User | null }) {
 
   const displayList = getDisplaySongs();
 
-  // [수정] 최상위 컨테이너 패딩 제거 (피아노 전체화면을 위해)
   return (
-    <div className="h-screen bg-gray-50 flex flex-col items-center overflow-hidden">
+    // [핵심 수정] h-screen 대신 'fixed inset-0' 사용
+    // 이것은 부모가 style="height: auto !important"를 강제해도 무시하고 화면 전체를 덮어버립니다.
+    <div className="fixed inset-0 bg-gray-50 flex flex-col items-center overflow-hidden">
 
       {/* 1. 헤더 & 네비게이션 (일반 모드일 때만 표시) */}
       {activeTab !== 'piano' && (
@@ -133,7 +134,7 @@ function Home({ user }: { user: User | null }) {
         </div>
       )}
 
-      {/* 2. 탭 메뉴 (여백 조건부 적용) */}
+      {/* 2. 탭 메뉴 */}
       <div className={`w-full max-w-2xl flex border-b border-gray-300 mb-2 shrink-0 ${activeTab === 'piano' ? 'px-0 mt-2' : 'px-4'}`}>
         <button onClick={() => setActiveTab('all')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'all' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_all')} ({songs.length})</button>
         <button onClick={() => setActiveTab('recent')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'recent' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_recent')} ({user ? recentSongs.length : 0})</button>
@@ -141,16 +142,19 @@ function Home({ user }: { user: User | null }) {
         <button onClick={() => setActiveTab('piano')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'piano' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>🎹 {t('app.tab_piano')}</button>
       </div>
 
-      {/* 3. 메인 콘텐츠 (피아노일 때 꽉 채우기) */}
+      {/* 3. 메인 콘텐츠 */}
+      {/* min-h-0: 플렉스 박스 안에서 스크롤을 위해 필수 */}
       <div className={`flex-1 min-h-0 relative ${activeTab === 'piano' ? 'w-full' : 'w-full max-w-2xl px-4'}`}>
 
         {activeTab === 'piano' ? (
-          // [피아노 모드] width, height 100% 사용
+          // [피아노 모드]
+          // w-full h-full: 부모(flex-1)가 차지하는 모든 공간을 씀
+          // pb-0: 하단 여백 없음 (건반을 끝까지 내리기 위함)
           <div className="w-full h-full pb-0 bg-black">
             <Piano />
           </div>
         ) : (
-          // [목록 모드] 기존 스타일 유지
+          // [목록 모드]
           <div className="w-full h-full overflow-y-auto pb-4 scrollbar-hide">
             <div className="w-full flex gap-2 mb-4">
               <div className="flex-1 relative">

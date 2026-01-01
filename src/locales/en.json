@@ -12,6 +12,7 @@
         "tab_all": "All Songs",
         "tab_recent": "Recent",
         "tab_my": "My Songs",
+        "tab_piano": "Piano",
         "search_placeholder": "Search title, lyrics...",
         "empty_list": "No songs found.",
         "login_required": "Login required.",
@@ -71,6 +72,9 @@
         "report_email_btn": "Report via Email",
         "share_msg": "🎵 [{{title}}] Memory Challenge! My score: {{score}}.",
         "copy_complete": "Link copied!"
+    },
+    "piano": {
+        "rotate_hint": "🎹 Rotate to landscape for easier playing"
     },
     "about": {
         "title": "Why We Sing",

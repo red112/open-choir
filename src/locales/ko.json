@@ -12,6 +12,7 @@
         "tab_all": "전체 목록",
         "tab_recent": "최근 연습",
         "tab_my": "내가 등록한 곡",
+        "tab_piano": "피아노",
         "search_placeholder": "제목, 가사 검색...",
         "empty_list": "등록된 곡이 없습니다.",
         "login_required": "로그인이 필요한 기능입니다.",
@@ -71,6 +72,9 @@
         "report_email_btn": "가사가 이상한가요? 오류 제보하기",
         "share_msg": "🎵 [{{title}}] 가사 암기 도전! 제 점수는 {{score}}점입니다.",
         "copy_complete": "주소가 복사되었습니다!"
+    },
+    "piano": {
+        "rotate_hint": "🎹 화면을 가로로 돌리면 더 편해요"
     },
     "about": {
         "title": "우리가 노래하는 이유",

@@ -127,13 +127,14 @@ function Home({ user }: { user: User | null }) {
   const displayList = getDisplaySongs();
 
   return (
-    // h-screen과 overflow-hidden으로 화면 높이 고정 (피아노 때문)
+    // 전체 화면 고정
     <div className="h-screen bg-gray-50 flex flex-col items-center p-2 sm:p-4 overflow-hidden">
 
-      {/* 1. 헤더 & 네비게이션 (피아노 탭이 아닐 때만 표시) */}
+      {/* 1. 헤더 & 네비게이션 (피아노 아닐 때만 표시) */}
       {activeTab !== 'piano' && (
         <>
           <header className="w-full max-w-2xl flex justify-between items-center mb-2 py-4 px-2 border-b bg-white rounded-xl shadow-sm mt-2 shrink-0">
+            {/* ... 헤더 내용 (기존 동일) ... */}
             <h1 className="text-xl font-bold text-indigo-600 flex items-center gap-2 cursor-pointer" onClick={() => window.location.reload()}>
               {t('app.title')} 🎶
             </h1>
@@ -148,7 +149,7 @@ function Home({ user }: { user: User | null }) {
                   <button onClick={handleLogout} className="text-xs bg-gray-200 text-gray-600 px-3 py-2 rounded hover:bg-gray-300 font-bold transition">{t('app.logout')}</button>
                 </div>
               ) : (
-                <button onClick={handleLogin} className="text-xs bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 font-bold shadow transition">{t('app.login')}</button>
+                <button onClick={handleLogin} className="text-sm bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 font-bold shadow transition">{t('app.login')}</button>
               )}
             </div>
           </header>
@@ -168,7 +169,7 @@ function Home({ user }: { user: User | null }) {
         </>
       )}
 
-      {/* 2. 탭 메뉴 (항상 표시, 피아노일 땐 상단 고정 느낌) */}
+      {/* 2. 탭 메뉴 */}
       <div className={`w-full max-w-2xl flex border-b border-gray-300 mb-2 shrink-0 ${activeTab === 'piano' ? 'mt-2' : ''}`}>
         <button onClick={() => setActiveTab('all')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'all' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_all')} ({songs.length})</button>
         <button onClick={() => setActiveTab('recent')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'recent' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_recent')} ({user ? recentSongs.length : 0})</button>
@@ -176,17 +177,19 @@ function Home({ user }: { user: User | null }) {
         <button onClick={() => setActiveTab('piano')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'piano' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>🎹 {t('app.tab_piano')}</button>
       </div>
 
-      {/* 3. 메인 콘텐츠 (스크롤 영역) */}
-      <div className="w-full max-w-2xl flex-1 overflow-y-auto pb-4 scrollbar-hide min-h-0">
+      {/* 3. 메인 콘텐츠 (여기가 핵심 수정됨) */}
+      <div className="w-full max-w-2xl flex-1 min-h-0 relative">
+
         {activeTab === 'piano' ? (
-          // [피아노 모드]
+          // [피아노 모드] 스크롤 없음, 높이 100% 꽉 채움
           <div className="w-full h-full pb-2">
             <Piano />
           </div>
         ) : (
-          // [목록 모드]
-          <>
+          // [목록 모드] 기존처럼 스크롤 가능 (overflow-y-auto)
+          <div className="w-full h-full overflow-y-auto pb-4 scrollbar-hide">
             <div className="w-full flex gap-2 mb-4">
+              {/* ... 검색창 등 기존 코드 ... */}
               <div className="flex-1 relative">
                 <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('app.search_placeholder')} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-400 absolute left-3 top-2.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
@@ -196,7 +199,8 @@ function Home({ user }: { user: User | null }) {
               )}
             </div>
 
-            <div className="w-full space-y-3 pb-20">
+            <div className="space-y-3 pb-20">
+              {/* ... 목록 렌더링 코드 (기존과 동일) ... */}
               {(activeTab === 'recent' || activeTab === 'my') && !user && <div className="text-center py-10 bg-white rounded-xl border border-dashed"><p className="text-gray-500 mb-2">{t('app.login_required')}</p><button onClick={handleLogin} className="text-sm text-indigo-600 font-bold hover:underline">{t('app.go_login')}</button></div>}
               {user && displayList.length === 0 && <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">{t('app.empty_list')}</div>}
 
@@ -243,7 +247,7 @@ function Home({ user }: { user: User | null }) {
 
             {/* 목록 하단 광고 */}
             <AdBanner className="mt-4" slot={AD_CONFIG.SLOTS.LIST_FOOTER} format="horizontal" />
-          </>
+          </div>
         )}
       </div>
     </div>

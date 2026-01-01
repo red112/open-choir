@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 
 export default function Piano() {
     const { t } = useTranslation();
-    // [1] 이 변수가 범인입니다. (이제 아래에서 사용됩니다!)
     const [isLoaded, setIsLoaded] = useState(false);
     const synthRef = useRef<Tone.PolySynth | null>(null);
 
+    // 건반 데이터 (C3 ~ C5)
     const keys = [
         { note: 'C3', type: 'white' }, { note: 'C#3', type: 'black' },
         { note: 'D3', type: 'white' }, { note: 'D#3', type: 'black' },
@@ -33,8 +33,6 @@ export default function Piano() {
         }).toDestination();
 
         synthRef.current = synth;
-
-        // 악기 준비가 끝나면 true로 변경
         setIsLoaded(true);
 
         return () => {
@@ -45,54 +43,68 @@ export default function Piano() {
     const playNote = async (note: string) => {
         await Tone.start();
         if (synthRef.current) {
+            // 8n 길이만큼 소리 재생 (짧게 끊어침)
             synthRef.current.triggerAttackRelease(note, "8n");
         }
     };
 
     return (
         <div className="w-full h-full flex flex-col bg-gray-900 rounded-xl overflow-hidden shadow-2xl relative select-none">
-            <div className="bg-gray-800 text-gray-400 text-xs text-center py-1">
+            {/* 안내바 */}
+            <div className="bg-gray-800 text-gray-400 text-xs text-center py-1 shrink-0">
                 {t('piano.rotate_hint')}
             </div>
 
-            <div className="flex-1 flex relative">
-                {/* [2] 사용: 로딩이 안 됐으면 '로딩 중' 메시지 표시 */}
+            {/* 건반 영역 (남은 높이 100% 차지) */}
+            <div className="flex-1 flex relative" style={{ touchAction: 'none' }}>
+
                 {!isLoaded ? (
                     <div className="absolute inset-0 flex items-center justify-center text-white z-50">
-                        🎹 Loading...
+                        Loading...
                     </div>
                 ) : (
-                    /* [3] 로딩이 완료되면 건반 렌더링 */
                     <>
+                        {/* 흰 건반 */}
                         {keys.map((k) => {
                             if (k.type === 'white') {
                                 return (
                                     <button
                                         key={k.note}
-                                        className="flex-1 bg-white border border-gray-300 rounded-b-md active:bg-gray-200 active:scale-[0.98] transition-transform origin-top z-10 flex items-end justify-center pb-2"
-                                        onMouseDown={() => playNote(k.note)}
-                                        onTouchStart={(e) => { e.preventDefault(); playNote(k.note); }}
+                                        // h-full로 높이 꽉 채움, active 시 색상 변경
+                                        className="flex-1 h-full bg-white border-r border-b border-gray-300 rounded-b-sm active:bg-gray-200 transition-colors z-10 flex items-end justify-center pb-4"
+                                        // [수정] onPointerDown 하나로 통일 (모바일/PC 모두 대응)
+                                        onPointerDown={(e) => {
+                                            e.preventDefault(); // 텍스트 선택 등 기본 동작 방지
+                                            playNote(k.note);
+                                        }}
                                     >
-                                        <span className="text-gray-400 text-xs font-semibold">{k.note}</span>
+                                        <span className="text-gray-400 text-xs font-semibold select-none">{k.note}</span>
                                     </button>
                                 );
                             }
                             return null;
                         })}
 
+                        {/* 검은 건반 오버레이 */}
                         {keys.map((k, idx) => {
                             if (k.type !== 'black') return null;
+
+                            // 흰 건반 갯수 기반 위치 계산
                             const prevWhiteCount = keys.slice(0, idx).filter(x => x.type === 'white').length;
                             const totalWhite = 15;
-                            const leftPercent = (prevWhiteCount * (100 / totalWhite)) - (100 / totalWhite / 2.5);
+                            // 위치 미세 조정
+                            const leftPercent = (prevWhiteCount * (100 / totalWhite)) - (100 / totalWhite / 2);
 
                             return (
                                 <button
                                     key={k.note}
-                                    style={{ left: `${leftPercent}%`, width: `${100 / totalWhite * 0.7}%` }}
-                                    className="absolute top-0 h-[60%] bg-black rounded-b-md z-20 active:bg-gray-800 border-x border-b border-gray-600"
-                                    onMouseDown={() => playNote(k.note)}
-                                    onTouchStart={(e) => { e.preventDefault(); playNote(k.note); }}
+                                    // top-0 부터 높이 60%까지 차지
+                                    style={{ left: `${leftPercent}%`, width: `${100 / totalWhite * 0.6}%` }}
+                                    className="absolute top-0 h-[60%] bg-black rounded-b-md z-20 active:bg-gray-700 border-x border-b border-gray-800 shadow-md"
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        playNote(k.note);
+                                    }}
                                 >
                                 </button>
                             )

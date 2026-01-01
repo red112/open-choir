@@ -3,11 +3,11 @@ import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AD_CONFIG } from './adConfig'; // 광고 설정
-import AdBanner from './components/AdBanner'; // 광고 컴포넌트
+import { AD_CONFIG } from './adConfig';
+import AdBanner from './components/AdBanner';
 import CreateSong from './CreateSong';
 import Game from './Game';
-import Piano from './Piano'; // 피아노 컴포넌트
+import Piano from './Piano';
 import Terms from './Terms';
 import Privacy from './Privacy';
 import Guide from './Guide';
@@ -18,13 +18,9 @@ function Home({ user }: { user: User | null }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  // 데이터 상태
   const [songs, setSongs] = useState<any[]>([]);
   const [recentSongs, setRecentSongs] = useState<any[]>([]);
-
-  // UI 상태
   const [isAdmin, setIsAdmin] = useState(false);
-  // 탭에 'piano' 추가
   const [activeTab, setActiveTab] = useState<'all' | 'recent' | 'my' | 'piano'>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,59 +41,32 @@ function Home({ user }: { user: User | null }) {
   }
 
   async function fetchSongs() {
-    const { data, error } = await supabase
-      .from('songs')
-      .select('*, song_issues(count)')
-      .order('created_at', { ascending: false });
-
+    const { data, error } = await supabase.from('songs').select('*, song_issues(count)').order('created_at', { ascending: false });
     if (!error) setSongs(data || []);
   }
 
   async function fetchRecentSongs(userId: string) {
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles').select('recent_songs').eq('id', userId).single();
-
-    if (profileError || !profileData || !profileData.recent_songs) {
-      setRecentSongs([]); return;
-    }
-
+    const { data: profileData, error: profileError } = await supabase.from('profiles').select('recent_songs').eq('id', userId).single();
+    if (profileError || !profileData || !profileData.recent_songs) { setRecentSongs([]); return; }
     const songIds = profileData.recent_songs;
-    const { data: songsData, error: songsError } = await supabase
-      .from('songs')
-      .select('*, song_issues(count)')
-      .in('song_id', songIds);
-
+    const { data: songsData, error: songsError } = await supabase.from('songs').select('*, song_issues(count)').in('song_id', songIds);
     if (songsError || !songsData) return;
-
-    const sortedSongs = songIds.map((id: string) =>
-      songsData.find((song) => song.song_id === id)
-    ).filter(Boolean);
-
+    const sortedSongs = songIds.map((id: string) => songsData.find((song) => song.song_id === id)).filter(Boolean);
     setRecentSongs(sortedSongs);
   }
 
   const getDisplaySongs = () => {
     let targetList: any[] = [];
-
     if (activeTab === 'recent') targetList = recentSongs;
     else if (activeTab === 'my') targetList = songs.filter(s => user && s.created_by === user.id);
     else targetList = songs;
 
     if (searchTerm.trim() !== '') {
       const lowerTerm = searchTerm.toLowerCase();
-      targetList = targetList.filter(song =>
-        song.title.toLowerCase().includes(lowerTerm) ||
-        song.lyrics_content.toLowerCase().includes(lowerTerm)
-      );
+      targetList = targetList.filter(song => song.title.toLowerCase().includes(lowerTerm) || song.lyrics_content.toLowerCase().includes(lowerTerm));
     }
-
     if (activeTab === 'recent') return targetList;
-
-    return [...targetList].sort((a, b) => {
-      return sortOrder === 'asc'
-        ? a.title.localeCompare(b.title, 'ko')
-        : b.title.localeCompare(a.title, 'ko');
-    });
+    return [...targetList].sort((a, b) => { return sortOrder === 'asc' ? a.title.localeCompare(b.title, 'ko') : b.title.localeCompare(a.title, 'ko'); });
   };
 
   const handleLogin = async () => { await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }); };
@@ -116,25 +85,20 @@ function Home({ user }: { user: User | null }) {
     try { const { error } = await supabase.from('songs').delete().eq('song_id', songId); if (error) throw error; alert(t('song.deleted')); fetchSongs(); } catch (err) { alert(t('song.delete_fail')); }
   };
 
-  const handleOpenYoutube = (e: React.MouseEvent, url: string) => {
-    e.stopPropagation();
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
+  const handleOpenYoutube = (e: React.MouseEvent, url: string) => { e.stopPropagation(); window.open(url, '_blank', 'noopener,noreferrer'); };
   const handleEdit = (e: React.MouseEvent, songId: string) => { e.stopPropagation(); navigate(`/edit/${songId}`); };
   const toggleLang = () => i18n.changeLanguage(i18n.language === 'ko' ? 'en' : 'ko');
 
   const displayList = getDisplaySongs();
 
+  // [수정] 최상위 컨테이너 패딩 제거 (피아노 전체화면을 위해)
   return (
-    // 전체 화면 고정
-    <div className="h-screen bg-gray-50 flex flex-col items-center p-2 sm:p-4 overflow-hidden">
+    <div className="h-screen bg-gray-50 flex flex-col items-center overflow-hidden">
 
-      {/* 1. 헤더 & 네비게이션 (피아노 아닐 때만 표시) */}
+      {/* 1. 헤더 & 네비게이션 (일반 모드일 때만 표시) */}
       {activeTab !== 'piano' && (
-        <>
-          <header className="w-full max-w-2xl flex justify-between items-center mb-2 py-4 px-2 border-b bg-white rounded-xl shadow-sm mt-2 shrink-0">
-            {/* ... 헤더 내용 (기존 동일) ... */}
+        <div className="w-full flex flex-col items-center px-4 pt-4 shrink-0">
+          <header className="w-full max-w-2xl flex justify-between items-center mb-2 py-4 px-2 border-b bg-white rounded-xl shadow-sm">
             <h1 className="text-xl font-bold text-indigo-600 flex items-center gap-2 cursor-pointer" onClick={() => window.location.reload()}>
               {t('app.title')} 🎶
             </h1>
@@ -154,42 +118,41 @@ function Home({ user }: { user: User | null }) {
             </div>
           </header>
 
-          <nav className="w-full max-w-2xl flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide shrink-0">
+          <nav className="w-full max-w-2xl flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
             <button onClick={() => navigate('/about')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_about')}</button>
             <button onClick={() => navigate('/guide')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_guide')}</button>
           </nav>
 
-          <div className="w-full max-w-2xl mb-4 shrink-0">
+          <div className="w-full max-w-2xl mb-4">
             {user ? (
               <button onClick={() => navigate('/create')} className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"><span>➕ {t('app.new_song')}</span></button>
             ) : (
               <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-center text-sm border border-blue-100">👋 {t('app.login_guide')}</div>
             )}
           </div>
-        </>
+        </div>
       )}
 
-      {/* 2. 탭 메뉴 */}
-      <div className={`w-full max-w-2xl flex border-b border-gray-300 mb-2 shrink-0 ${activeTab === 'piano' ? 'mt-2' : ''}`}>
+      {/* 2. 탭 메뉴 (여백 조건부 적용) */}
+      <div className={`w-full max-w-2xl flex border-b border-gray-300 mb-2 shrink-0 ${activeTab === 'piano' ? 'px-0 mt-2' : 'px-4'}`}>
         <button onClick={() => setActiveTab('all')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'all' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_all')} ({songs.length})</button>
         <button onClick={() => setActiveTab('recent')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'recent' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_recent')} ({user ? recentSongs.length : 0})</button>
         <button onClick={() => setActiveTab('my')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'my' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_my')}</button>
         <button onClick={() => setActiveTab('piano')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'piano' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>🎹 {t('app.tab_piano')}</button>
       </div>
 
-      {/* 3. 메인 콘텐츠 (여기가 핵심 수정됨) */}
-      <div className="w-full max-w-2xl flex-1 min-h-0 relative">
+      {/* 3. 메인 콘텐츠 (피아노일 때 꽉 채우기) */}
+      <div className={`flex-1 min-h-0 relative ${activeTab === 'piano' ? 'w-full' : 'w-full max-w-2xl px-4'}`}>
 
         {activeTab === 'piano' ? (
-          // [피아노 모드] 스크롤 없음, 높이 100% 꽉 채움
-          <div className="w-full h-full pb-2">
+          // [피아노 모드] width, height 100% 사용
+          <div className="w-full h-full pb-0 bg-black">
             <Piano />
           </div>
         ) : (
-          // [목록 모드] 기존처럼 스크롤 가능 (overflow-y-auto)
+          // [목록 모드] 기존 스타일 유지
           <div className="w-full h-full overflow-y-auto pb-4 scrollbar-hide">
             <div className="w-full flex gap-2 mb-4">
-              {/* ... 검색창 등 기존 코드 ... */}
               <div className="flex-1 relative">
                 <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('app.search_placeholder')} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-400 absolute left-3 top-2.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
@@ -200,7 +163,6 @@ function Home({ user }: { user: User | null }) {
             </div>
 
             <div className="space-y-3 pb-20">
-              {/* ... 목록 렌더링 코드 (기존과 동일) ... */}
               {(activeTab === 'recent' || activeTab === 'my') && !user && <div className="text-center py-10 bg-white rounded-xl border border-dashed"><p className="text-gray-500 mb-2">{t('app.login_required')}</p><button onClick={handleLogin} className="text-sm text-indigo-600 font-bold hover:underline">{t('app.go_login')}</button></div>}
               {user && displayList.length === 0 && <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">{t('app.empty_list')}</div>}
 
@@ -236,7 +198,6 @@ function Home({ user }: { user: User | null }) {
                       <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
                     </div>
 
-                    {/* 목록 중간 광고 (5번째마다) */}
                     {(index + 1) % 5 === 0 && (
                       <AdBanner slot={AD_CONFIG.SLOTS.LIST_INFEED} format="horizontal" />
                     )}
@@ -245,7 +206,6 @@ function Home({ user }: { user: User | null }) {
               })}
             </div>
 
-            {/* 목록 하단 광고 */}
             <AdBanner className="mt-4" slot={AD_CONFIG.SLOTS.LIST_FOOTER} format="horizontal" />
           </div>
         )}
@@ -254,7 +214,6 @@ function Home({ user }: { user: User | null }) {
   );
 }
 
-// 2. 전체 앱 라우터 설정
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => {

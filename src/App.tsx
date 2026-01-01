@@ -9,6 +9,7 @@ import Terms from './Terms';
 import Privacy from './Privacy';
 import Guide from './Guide';
 import About from './About';
+import { AD_CONFIG } from './adConfig'; // [NEW] 설정 파일 import
 import AdBanner from './components/AdBanner';
 
 function Home({ user }: { user: User | null }) {
@@ -211,9 +212,12 @@ function Home({ user }: { user: User | null }) {
                 </div>
                 <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
 
-                {/* [NEW] 5번째 아이템마다 광고 표시 (0, 1, 2, 3, 4(광고), 5...) */}
+                {/* 5번째마다 광고 */}
                 {(index + 1) % 5 === 0 && (
-                  <AdBanner />
+                  <AdBanner
+                    slot={AD_CONFIG.SLOTS.LIST_INFEED} // [교체] 변수 사용
+                    format="horizontal"
+                  />
                 )}
 
               </div>
@@ -222,8 +226,13 @@ function Home({ user }: { user: User | null }) {
         })}
       </div>
 
-      {/* 목록 맨 하단 광고 (AdBanner 컴포넌트로 교체) */}
-      <AdBanner className="mt-8" />
+      {/* 목록 하단 광고 */}
+      <AdBanner
+        className="mt-8"
+        slot={AD_CONFIG.SLOTS.LIST_FOOTER} // [교체]
+        format="horizontal"
+      />
+
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import AdBanner from './components/AdBanner';
+import { AD_CONFIG } from './adConfig';
 
 export default function Guide() {
   const navigate = useNavigate();
@@ -110,6 +112,13 @@ export default function Guide() {
             지금 바로 도전하기
           </button>
         </div>
+      </div>
+
+
+      {/* [NEW] 광고 추가: 푸터 바로 위가 명당입니다 */}
+      <div className="w-full max-w-2xl mt-4 px-4">
+        <AdBanner slot={AD_CONFIG.SLOTS.CONTENT_BOTTOM} /> {/* [교체] */}
+        {/* ▲ 애드센스에서 '콘텐츠용' 광고단위를 하나 만들고 그 ID를 넣으세요 */}
       </div>
 
       {/* 저작권 및 개인정보 링크 (SEO 및 애드센스용) */}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useTranslation } from 'react-i18next';
 import AdBanner from './components/AdBanner';
+import { AD_CONFIG } from './adConfig';
 
 interface WordObj { original: string; clean: string; isBlank: boolean; userInput: string; isNewline?: boolean; }
 
@@ -159,8 +160,12 @@ export default function Game() {
 
       {gameState === 'playing' && <div className="fixed bottom-6 w-full max-w-xs px-4"><button onClick={finishGame} className="w-full bg-indigo-600 text-white py-4 rounded-full shadow-xl text-xl font-bold">{t('game.btn_check')}</button></div>}
 
-      <div className={`w-full max-w-2xl ${gameState === 'playing' ? 'mb-24' : 'mb-6'}`}>
-        <AdBanner />
+      {/* 콘텐츠 하단 광고 */}
+      <div className="w-full max-w-2xl mt-4 px-4">
+        <AdBanner
+          slot={AD_CONFIG.SLOTS.GAME_BOTTOM} // [교체]
+          format="horizontal"
+        />
       </div>
     </div>
   );

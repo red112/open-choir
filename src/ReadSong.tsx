@@ -83,8 +83,7 @@ export default function ReadSong() {
                     <span>{t('song.level')}{song.difficulty}</span>
                     <span>•</span>
                     <span>{song.voice_part || 'All Parts'}</span>
-                    <span>•</span>
-                    <span>{t('read.creator')} {song.profiles?.nickname || 'Unknown'}</span>
+                    {/* [삭제됨] 등록자 정보 표시 제거 */}
                 </div>
 
                 {/* 2. 곡 설명 */}
@@ -121,7 +120,7 @@ export default function ReadSong() {
                     <span>🎮</span> {t('read.btn_start')}
                 </button>
 
-                {/* 4. 전체 가사 (여기서 바로 보여짐!) */}
+                {/* 4. 전체 가사 */}
                 <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-4 border-t pt-4 mt-2">
                     {song.lyrics_content}
                 </div>

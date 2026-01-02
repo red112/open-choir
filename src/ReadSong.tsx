@@ -5,39 +5,60 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { AD_CONFIG } from './adConfig';
 import AdBanner from './components/AdBanner';
-import i18n from './i18n';
+
+// 유튜브 URL ID 추출 헬퍼 함수
+function getYouTubeID(url: string) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
 
 export default function ReadSong() {
     const { songId } = useParams();
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const [song, setSong] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
+        // 유저 정보 확인
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
         fetchSong();
     }, [songId]);
 
     async function fetchSong() {
-        const { data, error } = await supabase
-            .from('songs')
-            .select('*, profiles(nickname)') // 등록자 닉네임 가져오기
-            .eq('song_id', songId)
-            .single();
+        try {
+            const { data, error } = await supabase
+                .from('songs')
+                .select('*, profiles(nickname)')
+                .eq('song_id', songId)
+                .single();
 
-        if (error || !data) {
+            if (error) throw error;
+
+            if (!data) {
+                alert('Song not found');
+                navigate('/');
+                return;
+            }
+
+            setSong(data);
+        } catch (error) {
+            console.error("Error fetching song:", error);
             alert('Error loading song');
             navigate('/');
-        } else {
-            setSong(data);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
+    // 로딩 중일 때 표시
     if (loading) return <div className="p-10 text-center">{t('game.loading')}</div>;
+
+    // 데이터가 없을 때 안전장치 (흰 화면 방지)
     if (!song) return null;
 
     return (
@@ -62,7 +83,7 @@ export default function ReadSong() {
             <div className="w-full max-w-2xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
                 {/* 제목 및 정보 */}
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{song.title}</h1>
-                <div className="flex gap-2 text-sm text-gray-500 mb-6">
+                <div className="flex gap-2 text-sm text-gray-500 mb-6 flex-wrap">
                     <span>{t('song.level')}{song.difficulty}</span>
                     <span>•</span>
                     <span>{song.voice_part || 'All Parts'}</span>
@@ -76,7 +97,7 @@ export default function ReadSong() {
                         <h3 className="font-bold text-indigo-700 mb-1 flex items-center gap-2">
                             {t('read.desc_title')}
 
-                            {/* [NEW] 번역 버튼: UI 언어가 한국어('ko')가 아닐 때만 노출 */}
+                            {/* 번역 버튼 (한국어가 아닐 때만) */}
                             {i18n.language !== 'ko' && (
                                 <a
                                     href={`https://translate.google.com/?sl=auto&tl=${i18n.language}&text=${encodeURIComponent(song.description)}`}
@@ -85,7 +106,6 @@ export default function ReadSong() {
                                     className="text-xs font-normal bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded shadow-sm hover:bg-indigo-50 no-underline flex items-center gap-1"
                                     title="Translate with Google"
                                 >
-                                    {/* 번역 아이콘 (SVG) */}
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
                                     </svg>
@@ -97,9 +117,13 @@ export default function ReadSong() {
                     </div>
                 )}
 
-                {/* 유튜브 영상 (있으면) */}
-                {song.youtube_url && (
-                    <div className="mb-8 aspect-video rounded-lg overflow-hidden bg-black">
+                {/* 상단 광고 (설명 아래) */}
+                {/* 아직 슬롯 ID를 안 만들었다면 CONTENT_BOTTOM을 임시로 쓰세요 */}
+                <AdBanner slot={AD_CONFIG.SLOTS.CONTENT_BOTTOM} format="rectangle" />
+
+                {/* 유튜브 영상 */}
+                {song.youtube_url && getYouTubeID(song.youtube_url) && (
+                    <div className="my-6 aspect-video rounded-lg overflow-hidden bg-black">
                         <iframe
                             width="100%"
                             height="100%"
@@ -112,12 +136,12 @@ export default function ReadSong() {
                     </div>
                 )}
 
-                {/* 전체 가사 (Text Content) */}
-                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-6">
+                {/* 전체 가사 */}
+                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-6 mt-6">
                     {song.lyrics_content}
                 </div>
 
-                {/* 게임 시작 버튼 (플로팅 대신 하단 고정) */}
+                {/* 게임 시작 버튼 */}
                 <button
                     onClick={() => navigate(`/game/${songId}`)}
                     className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2"
@@ -127,17 +151,10 @@ export default function ReadSong() {
 
             </div>
 
-            {/* 하단 광고 (콘텐츠 하단) */}
+            {/* 하단 광고 */}
             <div className="w-full max-w-2xl mt-6">
-                <AdBanner slot={AD_CONFIG.SLOTS.READ_BOTTOM} />
+                <AdBanner slot={AD_CONFIG.SLOTS.CONTENT_BOTTOM} />
             </div>
         </div>
     );
-}
-
-// 유튜브 URL에서 ID 추출하는 헬퍼 함수
-function getYouTubeID(url: string) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
 }

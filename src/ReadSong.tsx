@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { AD_CONFIG } from './adConfig';
 import AdBanner from './components/AdBanner';
+import i18n from './i18n';
 
 export default function ReadSong() {
     const { songId } = useParams();
@@ -69,10 +70,29 @@ export default function ReadSong() {
                     <span>{t('read.creator')} {song.profiles?.nickname || 'Unknown'}</span>
                 </div>
 
-                {/* [중요] 곡 설명 (Description) - 구글이 좋아하는 콘텐츠 */}
+                {/* 곡 설명 (Description) */}
                 {song.description && (
-                    <div className="bg-indigo-50 p-4 rounded-lg mb-6 text-gray-700 leading-relaxed text-sm">
-                        <h3 className="font-bold text-indigo-700 mb-1">{t('read.desc_title')}</h3>
+                    <div className="bg-indigo-50 p-4 rounded-lg mb-6 text-gray-700 leading-relaxed text-sm relative group">
+                        <h3 className="font-bold text-indigo-700 mb-1 flex items-center gap-2">
+                            {t('read.desc_title')}
+
+                            {/* [NEW] 번역 버튼: UI 언어가 한국어('ko')가 아닐 때만 노출 */}
+                            {i18n.language !== 'ko' && (
+                                <a
+                                    href={`https://translate.google.com/?sl=auto&tl=${i18n.language}&text=${encodeURIComponent(song.description)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs font-normal bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded shadow-sm hover:bg-indigo-50 no-underline flex items-center gap-1"
+                                    title="Translate with Google"
+                                >
+                                    {/* 번역 아이콘 (SVG) */}
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
+                                    </svg>
+                                    Translate
+                                </a>
+                            )}
+                        </h3>
                         <p className="whitespace-pre-wrap">{song.description}</p>
                     </div>
                 )}

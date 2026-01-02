@@ -24,7 +24,6 @@ export default function ReadSong() {
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
-        // 유저 정보 확인
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
         fetchSong();
     }, [songId]);
@@ -55,10 +54,7 @@ export default function ReadSong() {
         }
     }
 
-    // 로딩 중일 때 표시
     if (loading) return <div className="p-10 text-center">{t('game.loading')}</div>;
-
-    // 데이터가 없을 때 안전장치 (흰 화면 방지)
     if (!song) return null;
 
     return (
@@ -81,9 +77,9 @@ export default function ReadSong() {
             </div>
 
             <div className="w-full max-w-2xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
-                {/* 제목 및 정보 */}
+                {/* 1. 제목 및 정보 */}
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{song.title}</h1>
-                <div className="flex gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+                <div className="flex gap-2 text-sm text-gray-500 mb-4 flex-wrap">
                     <span>{t('song.level')}{song.difficulty}</span>
                     <span>•</span>
                     <span>{song.voice_part || 'All Parts'}</span>
@@ -91,13 +87,24 @@ export default function ReadSong() {
                     <span>{t('read.creator')} {song.profiles?.nickname || 'Unknown'}</span>
                 </div>
 
-                {/* 곡 설명 (Description) */}
+                {/* 2. 상단 광고 (제목 바로 아래) */}
+                <AdBanner slot={AD_CONFIG.SLOTS.CONTENT_BOTTOM} format="rectangle" className="mb-6" />
+
+                {/* 3. 게임 시작 버튼 (최상단 배치로 주목도 Up) */}
+                <button
+                    onClick={() => navigate(`/game/${songId}`)}
+                    className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2 mb-8"
+                >
+                    <span>🎮</span> {t('read.btn_start')}
+                </button>
+
+                {/* 4. 곡 설명 (Description) */}
                 {song.description && (
                     <div className="bg-indigo-50 p-4 rounded-lg mb-6 text-gray-700 leading-relaxed text-sm relative group">
                         <h3 className="font-bold text-indigo-700 mb-1 flex items-center gap-2">
                             {t('read.desc_title')}
 
-                            {/* 번역 버튼 (한국어가 아닐 때만) */}
+                            {/* 번역 버튼 */}
                             {i18n.language !== 'ko' && (
                                 <a
                                     href={`https://translate.google.com/?sl=auto&tl=${i18n.language}&text=${encodeURIComponent(song.description)}`}
@@ -117,13 +124,14 @@ export default function ReadSong() {
                     </div>
                 )}
 
-                {/* 상단 광고 (설명 아래) */}
-                {/* 아직 슬롯 ID를 안 만들었다면 CONTENT_BOTTOM을 임시로 쓰세요 */}
-                <AdBanner slot={AD_CONFIG.SLOTS.CONTENT_BOTTOM} format="rectangle" />
+                {/* 5. 전체 가사 (Text Content) */}
+                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-6">
+                    {song.lyrics_content}
+                </div>
 
-                {/* 유튜브 영상 */}
+                {/* 6. 유튜브 영상 (맨 아래로 이동) */}
                 {song.youtube_url && getYouTubeID(song.youtube_url) && (
-                    <div className="my-6 aspect-video rounded-lg overflow-hidden bg-black">
+                    <div className="mt-8 aspect-video rounded-lg overflow-hidden bg-black shadow-md">
                         <iframe
                             width="100%"
                             height="100%"
@@ -136,24 +144,11 @@ export default function ReadSong() {
                     </div>
                 )}
 
-                {/* 전체 가사 */}
-                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-6 mt-6">
-                    {song.lyrics_content}
-                </div>
-
-                {/* 게임 시작 버튼 */}
-                <button
-                    onClick={() => navigate(`/game/${songId}`)}
-                    className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2"
-                >
-                    <span>🎮</span> {t('read.btn_start')}
-                </button>
-
             </div>
 
-            {/* 하단 광고 */}
+            {/* 7. 하단 광고 */}
             <div className="w-full max-w-2xl mt-6">
-                <AdBanner slot={AD_CONFIG.SLOTS.CONTENT_BOTTOM} />
+                <AdBanner slot={AD_CONFIG.SLOTS.READ_BOTTOM} />
             </div>
         </div>
     );

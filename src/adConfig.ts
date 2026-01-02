@@ -19,6 +19,7 @@ export const AD_CONFIG = {
         CONTENT_BOTTOM: "4940258417",
 
         // [추가] 읽기 페이지 하단 광고
+        READ_MIDDLE: "3596716143", // (새로 만들어서 교체 추천)        
         READ_BOTTOM: "3328288681" // (임시로 콘텐츠용 ID 사용)
     }
 };

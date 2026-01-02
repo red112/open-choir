@@ -64,7 +64,7 @@ export default function ReadSong() {
             </Helmet>
 
             {/* 상단 네비게이션 */}
-            <div className="w-full max-w-2xl flex justify-between items-center mb-6">
+            <div className="w-full max-w-2xl flex justify-between items-center mb-4">
                 <button onClick={() => navigate('/')} className="text-gray-500 hover:text-indigo-600 font-bold">
                     ← {t('game.btn_list')}
                 </button>
@@ -76,9 +76,9 @@ export default function ReadSong() {
             </div>
 
             <div className="w-full max-w-2xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
-                {/* 1. 제목 및 메타 정보 */}
+                {/* 1. 제목 및 정보 */}
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{song.title}</h1>
-                <div className="flex gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+                <div className="flex gap-2 text-sm text-gray-500 mb-4 flex-wrap">
                     <span>{t('song.level')}{song.difficulty}</span>
                     <span>•</span>
                     <span>{song.voice_part || 'All Parts'}</span>
@@ -86,9 +86,9 @@ export default function ReadSong() {
                     <span>{t('read.creator')} {song.profiles?.nickname || 'Unknown'}</span>
                 </div>
 
-                {/* 2. 곡 설명 (최상단 배치하여 텍스트 비중 높임) */}
+                {/* 2. 곡 설명 */}
                 {song.description && (
-                    <div className="bg-indigo-50 p-4 rounded-lg mb-6 text-gray-700 leading-relaxed text-sm relative group">
+                    <div className="bg-indigo-50 p-4 rounded-lg mb-4 text-gray-700 leading-relaxed text-sm relative group">
                         <h3 className="font-bold text-indigo-700 mb-1 flex items-center gap-2">
                             {t('read.desc_title')}
                             {i18n.language !== 'ko' && (
@@ -112,16 +112,21 @@ export default function ReadSong() {
                 {/* 3. 게임 시작 버튼 */}
                 <button
                     onClick={() => navigate(`/game/${songId}`)}
-                    className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2 mb-6"
+                    className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2 mb-4"
                 >
                     <span>🎮</span> {t('read.btn_start')}
                 </button>
 
-                {/* 4. [광고 1] 중간 삽입 (가로형) */}
-                <AdBanner slot={AD_CONFIG.SLOTS.READ_MIDDLE} format="horizontal" />
+                {/* 4. [광고 1] 중간 삽입 (가로형, 여백 최소화) */}
+                {/* my-2: 위아래 여백을 좁게 줌 */}
+                <AdBanner
+                    slot={AD_CONFIG.SLOTS.READ_MIDDLE}
+                    format="horizontal"
+                    className="my-2"
+                />
 
                 {/* 5. 전체 가사 */}
-                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-6 mt-4">
+                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-4 mt-2">
                     {song.lyrics_content}
                 </div>
 
@@ -142,9 +147,9 @@ export default function ReadSong() {
 
             </div>
 
-            {/* 7. [광고 2] 하단 삽입 */}
+            {/* 7. [광고 2] 하단 삽입 (기존 유지) */}
             <div className="w-full max-w-2xl mt-6">
-                <AdBanner slot={AD_CONFIG.SLOTS.READ_BOTTOM} />
+                <AdBanner slot={AD_CONFIG.SLOTS.READ_BOTTOM} className="my-4" />
             </div>
         </div>
     );

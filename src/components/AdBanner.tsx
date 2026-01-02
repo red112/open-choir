@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { AD_CONFIG } from '../adConfig'; // [NEW] 설정 파일 import
+import { AD_CONFIG } from '../adConfig';
 
 declare global {
     interface Window {
@@ -9,7 +9,7 @@ declare global {
 
 interface AdBannerProps {
     className?: string;
-    slot: string; // 슬롯 ID만 받으면 됨
+    slot: string;
     format?: 'auto' | 'fluid' | 'rectangle' | 'horizontal';
 }
 
@@ -25,14 +25,16 @@ export default function AdBanner({ className = "", slot, format = 'auto' }: AdBa
     }, []);
 
     return (
-        <div className={`w-full text-center my-6 ${className}`}>
+        // [수정] 기본 margin 제거 (className으로 제어)
+        <div className={`w-full text-center ${className}`}>
             {import.meta.env.DEV ? (
-                <div className="bg-gray-100 p-4 rounded text-xs text-gray-400 border border-dashed border-gray-300 mx-auto max-w-md">
-                    광고 영역<br />(Slot: {slot})
+                // [수정] 개발용 박스 높이를 내용물에 맞춤 (너무 크지 않게)
+                <div className="bg-gray-100 p-2 rounded text-xs text-gray-400 border border-dashed border-gray-300 mx-auto max-w-md">
+                    광고 ({format})<br />Slot: {slot}
                 </div>
             ) : (
                 <ins className="adsbygoogle block"
-                    data-ad-client={AD_CONFIG.CLIENT_ID} // [수정] 설정 파일에서 가져옴
+                    data-ad-client={AD_CONFIG.CLIENT_ID}
                     data-ad-slot={slot}
                     data-ad-format={format}
                     data-full-width-responsive="true"></ins>

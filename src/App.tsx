@@ -12,7 +12,6 @@ import Terms from './Terms';
 import Privacy from './Privacy';
 import Guide from './Guide';
 import About from './About';
-import ReadSong from './ReadSong';
 
 // 1. 홈 화면 컴포넌트
 function Home({ user }: { user: User | null }) {
@@ -93,11 +92,8 @@ function Home({ user }: { user: User | null }) {
   const displayList = getDisplaySongs();
 
   return (
-    // [핵심 수정] h-screen 대신 'fixed inset-0' 사용
-    // 이것은 부모가 style="height: auto !important"를 강제해도 무시하고 화면 전체를 덮어버립니다.
     <div className="fixed inset-0 bg-gray-50 flex flex-col items-center overflow-hidden">
 
-      {/* 1. 헤더 & 네비게이션 (일반 모드일 때만 표시) */}
       {activeTab !== 'piano' && (
         <div className="w-full flex flex-col items-center px-4 pt-4 shrink-0">
           <header className="w-full max-w-2xl flex justify-between items-center mb-2 py-4 px-2 border-b bg-white rounded-xl shadow-sm">
@@ -135,7 +131,6 @@ function Home({ user }: { user: User | null }) {
         </div>
       )}
 
-      {/* 2. 탭 메뉴 */}
       <div className={`w-full max-w-2xl flex border-b border-gray-300 mb-2 shrink-0 ${activeTab === 'piano' ? 'px-0 mt-2' : 'px-4'}`}>
         <button onClick={() => setActiveTab('all')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'all' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_all')} ({songs.length})</button>
         <button onClick={() => setActiveTab('recent')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'recent' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_recent')} ({user ? recentSongs.length : 0})</button>
@@ -143,19 +138,13 @@ function Home({ user }: { user: User | null }) {
         <button onClick={() => setActiveTab('piano')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'piano' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>🎹 {t('app.tab_piano')}</button>
       </div>
 
-      {/* 3. 메인 콘텐츠 */}
-      {/* min-h-0: 플렉스 박스 안에서 스크롤을 위해 필수 */}
       <div className={`flex-1 min-h-0 relative ${activeTab === 'piano' ? 'w-full' : 'w-full max-w-2xl px-4'}`}>
 
         {activeTab === 'piano' ? (
-          // [피아노 모드]
-          // w-full h-full: 부모(flex-1)가 차지하는 모든 공간을 씀
-          // pb-0: 하단 여백 없음 (건반을 끝까지 내리기 위함)
           <div className="w-full h-full pb-0 bg-black">
             <Piano />
           </div>
         ) : (
-          // [목록 모드]
           <div className="w-full h-full overflow-y-auto pb-4 scrollbar-hide">
             <div className="w-full flex gap-2 mb-4">
               <div className="flex-1 relative">
@@ -175,7 +164,7 @@ function Home({ user }: { user: User | null }) {
                 const hasIssues = song.song_issues && song.song_issues[0] && song.song_issues[0].count > 0;
                 return (
                   <div key={song.song_id}>
-                    <div onClick={() => navigate(`/read/${song.song_id}`)} className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group">
+                    <div onClick={() => navigate(`/game/${song.song_id}`)} className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 pr-32">
                           <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 flex-wrap">
@@ -203,8 +192,9 @@ function Home({ user }: { user: User | null }) {
                       <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
                     </div>
 
+                    {/* [수정] 목록 중간 광고: horizontal + 여백 최소화 */}
                     {(index + 1) % 5 === 0 && (
-                      <AdBanner slot={AD_CONFIG.SLOTS.LIST_INFEED} format="horizontal" />
+                      <AdBanner slot={AD_CONFIG.SLOTS.LIST_INFEED} format="horizontal" className="my-2" />
                     )}
                   </div>
                 );
@@ -232,7 +222,6 @@ export default function App() {
         <Route path="/" element={<Home user={user} />} />
         <Route path="/create" element={<CreateSong />} />
         <Route path="/edit/:songId" element={<CreateSong />} />
-        <Route path="/read/:songId" element={<ReadSong />} />
         <Route path="/game/:songId" element={<Game />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />

@@ -23,6 +23,8 @@ export default function CreateSong() {
   const [savedSongTitle, setSavedSongTitle] = useState('');
   const [issues, setIssues] = useState<any[]>([]);
 
+  const [description, setDescription] = useState(''); // [추가]
+
   const VOICE_PARTS = ['남성', '여성', '소프라노', '메조', '알토', '테너', '바리톤', '베이스'];
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function CreateSong() {
     if (error || !data) { alert('Load Failed'); navigate('/'); }
     else {
       setTitle(data.title); setLyrics(data.lyrics_content);
-      setDifficulty(String(data.difficulty)); setYoutubeUrl(data.youtube_url || ''); setVoicePart(data.voice_part || '');
+      setDifficulty(String(data.difficulty)); setYoutubeUrl(data.youtube_url || ''); setVoicePart(data.voice_part || ''); setDescription(data.description || '');
     }
     setDataLoading(false);
   }
@@ -64,7 +66,7 @@ export default function CreateSong() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not found');
-      const songData = { title, lyrics_content: lyrics, difficulty: parseInt(difficulty), youtube_url: youtubeUrl, voice_part: voicePart, ...(isEditMode ? {} : { created_by: user.id, play_count: 0 }) };
+      const songData = { title, lyrics_content: lyrics, difficulty: parseInt(difficulty), youtube_url: youtubeUrl, voice_part: voicePart, description: description, ...(isEditMode ? {} : { created_by: user.id, play_count: 0 }) };
 
       let res;
       if (isEditMode) res = await supabase.from('songs').update(songData).eq('song_id', songId).select();
@@ -92,6 +94,18 @@ export default function CreateSong() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div><label className="block text-sm font-medium mb-1">{t('create.input_title')}</label><input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-3 border rounded-lg" /></div>
           <div><label className="block text-sm font-medium mb-1">{t('create.input_youtube')}</label><input type="text" value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)} className="w-full p-3 border rounded-lg" /></div>
+
+          {/* [추가] 설명 입력 필드 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('create.input_desc')}</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none h-24 resize-none text-sm"
+              placeholder={t('create.desc_hint')}
+            ></textarea>
+          </div>
+
           <div><label className="block text-sm font-medium mb-1">{t('create.input_difficulty')}</label><select value={difficulty} onChange={e => setDifficulty(e.target.value)} className="w-full p-3 border rounded-lg bg-white">{[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>Level {n}</option>)}</select></div>
           <div><label className="block text-sm font-medium mb-1">{t('create.input_part')}</label><select value={voicePart} onChange={e => setVoicePart(e.target.value)} className="w-full p-3 border rounded-lg bg-white"><option value="">{t('create.part_none')}</option>{VOICE_PARTS.map(p => <option key={p} value={p}>{p}</option>)}</select></div>
           <div><label className="block text-sm font-medium mb-1">{t('create.input_lyrics')} <span className="text-xs text-gray-400">{t('create.lyrics_hint')}</span></label><textarea value={lyrics} onChange={e => setLyrics(e.target.value)} className="w-full p-3 border rounded-lg h-64" /></div>

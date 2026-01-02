@@ -12,6 +12,7 @@ import Terms from './Terms';
 import Privacy from './Privacy';
 import Guide from './Guide';
 import About from './About';
+import ReadSong from './ReadSong';
 
 // 1. 홈 화면 컴포넌트
 function Home({ user }: { user: User | null }) {
@@ -174,7 +175,7 @@ function Home({ user }: { user: User | null }) {
                 const hasIssues = song.song_issues && song.song_issues[0] && song.song_issues[0].count > 0;
                 return (
                   <div key={song.song_id}>
-                    <div onClick={() => navigate(`/game/${song.song_id}`)} className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group">
+                    <div onClick={() => navigate(`/read/${song.song_id}`)} className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 pr-32">
                           <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 flex-wrap">
@@ -231,6 +232,7 @@ export default function App() {
         <Route path="/" element={<Home user={user} />} />
         <Route path="/create" element={<CreateSong />} />
         <Route path="/edit/:songId" element={<CreateSong />} />
+        <Route path="/read/:songId" element={<ReadSong />} />
         <Route path="/game/:songId" element={<Game />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />

@@ -17,5 +17,8 @@ export const AD_CONFIG = {
 
         // 텍스트 페이지(About, Guide, Terms 등) 하단 광고
         CONTENT_BOTTOM: "4940258417",
+
+        // [추가] 읽기 페이지 하단 광고
+        READ_BOTTOM: "3328288681" // (임시로 콘텐츠용 ID 사용)
     }
 };

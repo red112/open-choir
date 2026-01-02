@@ -52,7 +52,15 @@
         "modal_list": "목록으로 이동",
         "alert_req": "제목과 가사는 필수입니다!",
         "issues_title": "🚨 수정 요청 사항",
-        "btn_resolve": "처리완료/삭제"
+        "btn_resolve": "처리완료/삭제",
+        "input_desc": "곡 설명 / 암기 팁 (선택)",
+        "desc_hint": "이 곡의 배경이나 암기할 때 유의할 점을 적어주세요. (검색엔진 노출에 도움이 됩니다.)"
+    },
+    "read": {
+        "btn_start": "게임 시작하기 (도전!)",
+        "btn_edit": "수정",
+        "creator": "등록자:",
+        "desc_title": "💡 곡 설명"
     },
     "game": {
         "loading": "로딩 중...",

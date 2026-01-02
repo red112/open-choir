@@ -52,7 +52,15 @@
         "modal_list": "Go to List",
         "alert_req": "Title and Lyrics are required.",
         "issues_title": "🚨 Edit Requests",
-        "btn_resolve": "Resolve/Delete"
+        "btn_resolve": "Resolve/Delete",
+        "input_desc": "Description / Memorization Tips (Optional)",
+        "desc_hint": "Write about the background or tips. (Good for SEO)"
+    },
+    "read": {
+        "btn_start": "Start Game (Challenge!)",
+        "btn_edit": "Edit",
+        "creator": "Added by:",
+        "desc_title": "💡 Description"
     },
     "game": {
         "loading": "Loading...",

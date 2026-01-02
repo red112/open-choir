@@ -160,13 +160,13 @@ export default function Game() {
 
       {gameState === 'playing' && <div className="fixed bottom-6 w-full max-w-xs px-4"><button onClick={finishGame} className="w-full bg-indigo-600 text-white py-4 rounded-full shadow-xl text-xl font-bold">{t('game.btn_check')}</button></div>}
 
-      {/* 콘텐츠 하단 광고 */}
-      <div className="w-full max-w-2xl mt-4 px-4">
-        <AdBanner
-          slot={AD_CONFIG.SLOTS.GAME_BOTTOM} // [교체]
-          format="horizontal"
-        />
-      </div>
+      {/* [수정] 게임 중(playing)일 때는 광고 렌더링 안 함 (null) */}
+      {gameState !== 'playing' && (
+        <div className="w-full max-w-2xl mt-6 p-4 bg-gray-100 rounded text-center text-xs text-gray-400 mb-6">
+          <p className="mb-2">{t('app.ad_area')}</p>
+          <AdBanner slot={AD_CONFIG.SLOTS.GAME_BOTTOM} />
+        </div>
+      )}
     </div>
   );
 }

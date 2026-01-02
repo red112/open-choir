@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import { AD_CONFIG } from './adConfig';
 import AdBanner from './components/AdBanner';
 
-// ▼ [중요] 이 함수가 컴포넌트 바깥에 꼭 있어야 합니다!
+// 유튜브 URL ID 추출 헬퍼 함수
 function getYouTubeID(url: string) {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -87,17 +87,20 @@ export default function ReadSong() {
                     <span>{t('read.creator')} {song.profiles?.nickname || 'Unknown'}</span>
                 </div>
 
-                {/* 2. 곡 설명 (최상단) */}
+                {/* 2. 곡 설명 */}
                 {song.description && (
                     <div className="bg-indigo-50 p-4 rounded-lg mb-6 text-gray-700 leading-relaxed text-sm relative group">
                         <h3 className="font-bold text-indigo-700 mb-1 flex items-center gap-2">
                             {t('read.desc_title')}
+
+                            {/* 번역 버튼 */}
                             {i18n.language !== 'ko' && (
                                 <a
                                     href={`https://translate.google.com/?sl=auto&tl=${i18n.language}&text=${encodeURIComponent(song.description)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs font-normal bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded shadow-sm hover:bg-indigo-50 no-underline flex items-center gap-1"
+                                    title="Translate with Google"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
@@ -118,22 +121,21 @@ export default function ReadSong() {
                     <span>🎮</span> {t('read.btn_start')}
                 </button>
 
-                {/* 4. [광고 1] 중간 삽입 (가로형) */}
-                {/* AdBanner 컴포넌트가 AD_CONFIG.SLOTS.READ_MIDDLE을 참조합니다 */}
-                <AdBanner
-                    slot={AD_CONFIG.SLOTS.READ_MIDDLE}
-                    format="horizontal"
-                    className="my-2"
-                />
-
-                {/* 5. 전체 가사 */}
-                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-4 mt-2">
+                {/* 4. 전체 가사 (여기서 바로 보여짐!) */}
+                <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-4 border-t pt-4 mt-2">
                     {song.lyrics_content}
                 </div>
 
-                {/* 6. 유튜브 영상 (맨 아래) */}
+                {/* 5. [광고 1] 중간 삽입 (가사 끝난 후) */}
+                <AdBanner
+                    slot={AD_CONFIG.SLOTS.READ_MIDDLE}
+                    format="horizontal"
+                    className="my-4"
+                />
+
+                {/* 6. 유튜브 영상 */}
                 {song.youtube_url && getYouTubeID(song.youtube_url) && (
-                    <div className="mt-8 aspect-video rounded-lg overflow-hidden bg-black shadow-md">
+                    <div className="mt-4 aspect-video rounded-lg overflow-hidden bg-black shadow-md">
                         <iframe
                             width="100%"
                             height="100%"

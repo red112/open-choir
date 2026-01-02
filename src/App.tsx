@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { AD_CONFIG } from './adConfig';
 import AdBanner from './components/AdBanner';
 import CreateSong from './CreateSong';
+import ReadSong from './ReadSong'; // [필수] 읽기 페이지 import
 import Game from './Game';
 import Piano from './Piano';
 import Terms from './Terms';
@@ -74,7 +75,8 @@ function Home({ user }: { user: User | null }) {
 
   const handleShare = async (e: React.MouseEvent, songId: string, title: string) => {
     e.stopPropagation();
-    const shareUrl = `${window.location.origin}/game/${songId}`;
+    // [수정] 공유 링크도 Read 페이지로 연결되도록 변경
+    const shareUrl = `${window.location.origin}/read/${songId}`;
     const shareData = { title: t('app.title'), text: `🎵 [${title}] ${t('game.share_msg', { title: '', score: '' })}`, url: shareUrl };
     try { if (navigator.share) await navigator.share(shareData); else { await navigator.clipboard.writeText(shareUrl); alert(t('game.copy_complete')); } } catch (err) { console.error(err); }
   };
@@ -164,7 +166,8 @@ function Home({ user }: { user: User | null }) {
                 const hasIssues = song.song_issues && song.song_issues[0] && song.song_issues[0].count > 0;
                 return (
                   <div key={song.song_id}>
-                    <div onClick={() => navigate(`/game/${song.song_id}`)} className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group">
+                    {/* [수정 완료] 클릭 시 /read/로 이동 */}
+                    <div onClick={() => navigate(`/read/${song.song_id}`)} className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 pr-32">
                           <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2 flex-wrap">
@@ -192,7 +195,6 @@ function Home({ user }: { user: User | null }) {
                       <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
                     </div>
 
-                    {/* [수정] 목록 중간 광고: horizontal + 여백 최소화 */}
                     {(index + 1) % 5 === 0 && (
                       <AdBanner slot={AD_CONFIG.SLOTS.LIST_INFEED} format="horizontal" className="my-2" />
                     )}
@@ -222,6 +224,7 @@ export default function App() {
         <Route path="/" element={<Home user={user} />} />
         <Route path="/create" element={<CreateSong />} />
         <Route path="/edit/:songId" element={<CreateSong />} />
+        <Route path="/read/:songId" element={<ReadSong />} />
         <Route path="/game/:songId" element={<Game />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />

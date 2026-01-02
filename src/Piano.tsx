@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react'; // useEffect 삭제
+import { useEffect, useState, useRef } from 'react';
 import * as Tone from 'tone';
 import { useTranslation } from 'react-i18next';
 
 export default function Piano() {
     const { t } = useTranslation();
-    // 로딩 상태 변수 삭제 (즉시 반응하도록 변경)
+    // [수정] isLoaded 변수를 사용하기 위해 필요한 상태
+    const [isLoaded, setIsLoaded] = useState(false);
     const synthRef = useRef<Tone.PolySynth | null>(null);
 
     const keys = [
@@ -25,20 +26,22 @@ export default function Piano() {
         { note: 'C5', type: 'white' },
     ];
 
-    // [수정] 소리 재생 함수 (Lazy Initialization)
+    useEffect(() => {
+        const synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: 'triangle' },
+            envelope: { attack: 0.02, decay: 0.1, sustain: 0.3, release: 1 }
+        }).toDestination();
+
+        synthRef.current = synth;
+        setIsLoaded(true); // Synth 초기화 완료 시 true로 변경
+
+        return () => {
+            synth.dispose();
+        };
+    }, []);
+
     const playNote = async (note: string) => {
-        // 1. 브라우저 오디오 컨텍스트 시작 (필수)
         await Tone.start();
-
-        // 2. 악기가 없으면 지금 만든다 (첫 터치 시 생성)
-        if (!synthRef.current) {
-            synthRef.current = new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: 'triangle' },
-                envelope: { attack: 0.02, decay: 0.1, sustain: 0.3, release: 1 }
-            }).toDestination();
-        }
-
-        // 3. 소리 재생
         if (synthRef.current) {
             synthRef.current.triggerAttackRelease(note, "8n");
         }
@@ -46,53 +49,61 @@ export default function Piano() {
 
     return (
         <div className="w-full h-full flex flex-col bg-gray-900 rounded-xl overflow-hidden shadow-2xl relative select-none">
+            {/* 안내바 */}
             <div className="bg-gray-800 text-gray-400 text-xs text-center py-1 shrink-0">
                 {t('piano.rotate_hint')}
             </div>
 
-            <div className="flex-1 flex relative" style={{ touchAction: 'none' }}>
-                {/* 로딩 화면 삭제 (즉시 보여줌) */}
+            {/* 건반 영역 */}
+            {/* [핵심 수정] isLoaded 상태에 따라 로딩 표시/건반 표시 */}
+            {isLoaded ? (
+                <div className="flex-1 flex relative">
+                    {/* 흰 건반 */}
+                    {keys.map((k) => {
+                        if (k.type === 'white') {
+                            return (
+                                <button
+                                    key={k.note}
+                                    className="flex-1 h-full bg-white border-r border-b border-gray-300 rounded-b-sm active:bg-gray-200 transition-colors z-10 flex items-end justify-center pb-4"
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        playNote(k.note);
+                                    }}
+                                >
+                                    <span className="text-gray-400 text-xs font-semibold select-none">{k.note}</span>
+                                </button>
+                            );
+                        }
+                        return null;
+                    })}
 
-                {/* 흰 건반 */}
-                {keys.map((k) => {
-                    if (k.type === 'white') {
+                    {/* 검은 건반 */}
+                    {keys.map((k, idx) => {
+                        if (k.type !== 'black') return null;
+                        const prevWhiteCount = keys.slice(0, idx).filter(x => x.type === 'white').length;
+                        const totalWhite = 15;
+                        const leftPercent = (prevWhiteCount * (100 / totalWhite)) - (100 / totalWhite / 2);
+
                         return (
                             <button
                                 key={k.note}
-                                className="flex-1 h-full bg-white border-r border-b border-gray-300 rounded-b-sm active:bg-gray-200 transition-colors z-10 flex items-end justify-center pb-4"
+                                style={{ left: `${leftPercent}%`, width: `${100 / totalWhite * 0.6}%` }}
+                                className="absolute top-0 h-[60%] bg-black rounded-b-md z-20 active:bg-gray-700 border-x border-b border-gray-800 shadow-md"
                                 onPointerDown={(e) => {
                                     e.preventDefault();
                                     playNote(k.note);
                                 }}
                             >
-                                <span className="text-gray-400 text-xs font-semibold select-none">{k.note}</span>
                             </button>
-                        );
-                    }
-                    return null;
-                })}
-
-                {/* 검은 건반 */}
-                {keys.map((k, idx) => {
-                    if (k.type !== 'black') return null;
-                    const prevWhiteCount = keys.slice(0, idx).filter(x => x.type === 'white').length;
-                    const totalWhite = 15;
-                    const leftPercent = (prevWhiteCount * (100 / totalWhite)) - (100 / totalWhite / 2);
-
-                    return (
-                        <button
-                            key={k.note}
-                            style={{ left: `${leftPercent}%`, width: `${100 / totalWhite * 0.6}%` }}
-                            className="absolute top-0 h-[60%] bg-black rounded-b-md z-20 active:bg-gray-700 border-x border-b border-gray-800 shadow-md"
-                            onPointerDown={(e) => {
-                                e.preventDefault();
-                                playNote(k.note);
-                            }}
-                        >
-                        </button>
-                    )
-                })}
-            </div>
+                        )
+                    })}
+                </div>
+            ) : (
+                // [수정] isLoaded가 false일 때만 로딩 메시지 표시
+                <div className="absolute inset-0 flex items-center justify-center text-white z-50 text-lg">
+                    🎹 Loading...
+                </div>
+            )}
         </div>
     );
 }

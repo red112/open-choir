@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import { AD_CONFIG } from './adConfig';
 import AdBanner from './components/AdBanner';
 
+// ▼ [중요] 이 함수가 컴포넌트 바깥에 꼭 있어야 합니다!
 function getYouTubeID(url: string) {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -64,7 +65,7 @@ export default function ReadSong() {
             </Helmet>
 
             {/* 상단 네비게이션 */}
-            <div className="w-full max-w-2xl flex justify-between items-center mb-4">
+            <div className="w-full max-w-2xl flex justify-between items-center mb-6">
                 <button onClick={() => navigate('/')} className="text-gray-500 hover:text-indigo-600 font-bold">
                     ← {t('game.btn_list')}
                 </button>
@@ -86,9 +87,9 @@ export default function ReadSong() {
                     <span>{t('read.creator')} {song.profiles?.nickname || 'Unknown'}</span>
                 </div>
 
-                {/* 2. 곡 설명 */}
+                {/* 2. 곡 설명 (최상단) */}
                 {song.description && (
-                    <div className="bg-indigo-50 p-4 rounded-lg mb-4 text-gray-700 leading-relaxed text-sm relative group">
+                    <div className="bg-indigo-50 p-4 rounded-lg mb-6 text-gray-700 leading-relaxed text-sm relative group">
                         <h3 className="font-bold text-indigo-700 mb-1 flex items-center gap-2">
                             {t('read.desc_title')}
                             {i18n.language !== 'ko' && (
@@ -112,13 +113,13 @@ export default function ReadSong() {
                 {/* 3. 게임 시작 버튼 */}
                 <button
                     onClick={() => navigate(`/game/${songId}`)}
-                    className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2 mb-4"
+                    className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2 mb-6"
                 >
                     <span>🎮</span> {t('read.btn_start')}
                 </button>
 
-                {/* 4. [광고 1] 중간 삽입 (가로형, 여백 최소화) */}
-                {/* my-2: 위아래 여백을 좁게 줌 */}
+                {/* 4. [광고 1] 중간 삽입 (가로형) */}
+                {/* AdBanner 컴포넌트가 AD_CONFIG.SLOTS.READ_MIDDLE을 참조합니다 */}
                 <AdBanner
                     slot={AD_CONFIG.SLOTS.READ_MIDDLE}
                     format="horizontal"
@@ -130,7 +131,7 @@ export default function ReadSong() {
                     {song.lyrics_content}
                 </div>
 
-                {/* 6. 유튜브 영상 */}
+                {/* 6. 유튜브 영상 (맨 아래) */}
                 {song.youtube_url && getYouTubeID(song.youtube_url) && (
                     <div className="mt-8 aspect-video rounded-lg overflow-hidden bg-black shadow-md">
                         <iframe
@@ -147,7 +148,7 @@ export default function ReadSong() {
 
             </div>
 
-            {/* 7. [광고 2] 하단 삽입 (기존 유지) */}
+            {/* 7. [광고 2] 하단 삽입 */}
             <div className="w-full max-w-2xl mt-6">
                 <AdBanner slot={AD_CONFIG.SLOTS.READ_BOTTOM} className="my-4" />
             </div>

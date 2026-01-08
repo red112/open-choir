@@ -3,8 +3,8 @@ import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-// import { AD_CONFIG } from './adConfig'; // [삭제] 목록에선 광고 설정 불필요
-// import AdBanner from './components/AdBanner'; // [삭제] 목록에선 광고 컴포넌트 불필요
+// import { AD_CONFIG } from './adConfig'; // [삭제] 사용 안 함
+// import AdBanner from './components/AdBanner'; // [삭제] 사용 안 함
 import CreateSong from './CreateSong';
 import ReadSong from './ReadSong';
 import Game from './Game';
@@ -122,7 +122,6 @@ function Home({ user }: { user: User | null }) {
             <button onClick={() => navigate('/guide')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_guide')}</button>
           </nav>
 
-          {/* 사이트 소개 텍스트 (구글 봇을 위한 콘텐츠 - 유지) */}
           <div className="w-full max-w-2xl bg-white p-4 rounded-xl shadow-sm mb-4 border border-indigo-100">
             <h2 className="text-sm font-bold text-indigo-800 mb-1">Sing by Heart에 오신 것을 환영합니다! 👋</h2>
             <p className="text-xs text-gray-600 leading-relaxed">
@@ -167,11 +166,12 @@ function Home({ user }: { user: User | null }) {
               )}
             </div>
 
-            <div className="space-y-3 pb-10"> {/* pb-20 -> pb-10 (하단 광고 제거했으므로 여백 줄임) */}
+            <div className="space-y-3 pb-10">
               {(activeTab === 'recent' || activeTab === 'my') && !user && <div className="text-center py-10 bg-white rounded-xl border border-dashed"><p className="text-gray-500 mb-2">{t('app.login_required')}</p><button onClick={handleLogin} className="text-sm text-indigo-600 font-bold hover:underline">{t('app.go_login')}</button></div>}
               {user && displayList.length === 0 && <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">{t('app.empty_list')}</div>}
 
-              {displayList.map((song, index) => {
+              {/* [수정] index 파라미터 삭제 (사용 안 함) */}
+              {displayList.map((song) => {
                 const hasIssues = song.song_issues && song.song_issues[0] && song.song_issues[0].count > 0;
                 return (
                   <div key={song.song_id}>
@@ -202,14 +202,10 @@ function Home({ user }: { user: User | null }) {
                       </div>
                       <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
                     </div>
-
-                    {/* [삭제됨] 목록 중간 광고 */}
                   </div>
                 );
               })}
             </div>
-
-            {/* [삭제됨] 목록 하단 광고 */}
           </div>
         )}
       </div>

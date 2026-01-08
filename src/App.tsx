@@ -3,10 +3,10 @@ import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AD_CONFIG } from './adConfig';
-import AdBanner from './components/AdBanner';
+// import { AD_CONFIG } from './adConfig'; // [삭제] 목록에선 광고 설정 불필요
+// import AdBanner from './components/AdBanner'; // [삭제] 목록에선 광고 컴포넌트 불필요
 import CreateSong from './CreateSong';
-import ReadSong from './ReadSong'; // [필수] 읽기 페이지 import
+import ReadSong from './ReadSong';
 import Game from './Game';
 import Piano from './Piano';
 import Terms from './Terms';
@@ -75,7 +75,6 @@ function Home({ user }: { user: User | null }) {
 
   const handleShare = async (e: React.MouseEvent, songId: string, title: string) => {
     e.stopPropagation();
-    // [수정] 공유 링크도 Read 페이지로 연결되도록 변경
     const shareUrl = `${window.location.origin}/read/${songId}`;
     const shareData = { title: t('app.title'), text: `🎵 [${title}] ${t('game.share_msg', { title: '', score: '' })}`, url: shareUrl };
     try { if (navigator.share) await navigator.share(shareData); else { await navigator.clipboard.writeText(shareUrl); alert(t('game.copy_complete')); } } catch (err) { console.error(err); }
@@ -123,6 +122,16 @@ function Home({ user }: { user: User | null }) {
             <button onClick={() => navigate('/guide')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_guide')}</button>
           </nav>
 
+          {/* 사이트 소개 텍스트 (구글 봇을 위한 콘텐츠 - 유지) */}
+          <div className="w-full max-w-2xl bg-white p-4 rounded-xl shadow-sm mb-4 border border-indigo-100">
+            <h2 className="text-sm font-bold text-indigo-800 mb-1">Sing by Heart에 오신 것을 환영합니다! 👋</h2>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              합창단, 성가대를 위한 <b>가사 암기 트레이닝 서비스</b>입니다.<br />
+              아래 목록에서 연습할 곡을 선택하여 가사를 학습하고, 빈칸 채우기 게임을 통해 암기력을 테스트해 보세요.<br />
+              (로그인하시면 나만의 연습 기록을 관리할 수 있습니다.)
+            </p>
+          </div>
+
           <div className="w-full max-w-2xl mb-4">
             {user ? (
               <button onClick={() => navigate('/create')} className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"><span>➕ {t('app.new_song')}</span></button>
@@ -158,7 +167,7 @@ function Home({ user }: { user: User | null }) {
               )}
             </div>
 
-            <div className="space-y-3 pb-20">
+            <div className="space-y-3 pb-10"> {/* pb-20 -> pb-10 (하단 광고 제거했으므로 여백 줄임) */}
               {(activeTab === 'recent' || activeTab === 'my') && !user && <div className="text-center py-10 bg-white rounded-xl border border-dashed"><p className="text-gray-500 mb-2">{t('app.login_required')}</p><button onClick={handleLogin} className="text-sm text-indigo-600 font-bold hover:underline">{t('app.go_login')}</button></div>}
               {user && displayList.length === 0 && <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">{t('app.empty_list')}</div>}
 
@@ -166,7 +175,6 @@ function Home({ user }: { user: User | null }) {
                 const hasIssues = song.song_issues && song.song_issues[0] && song.song_issues[0].count > 0;
                 return (
                   <div key={song.song_id}>
-                    {/* [수정 완료] 클릭 시 /read/로 이동 */}
                     <div onClick={() => navigate(`/read/${song.song_id}`)} className="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer border border-transparent hover:border-indigo-200 active:bg-gray-50 relative group">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 pr-32">
@@ -195,15 +203,13 @@ function Home({ user }: { user: User | null }) {
                       <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
                     </div>
 
-                    {(index + 1) % 5 === 0 && (
-                      <AdBanner slot={AD_CONFIG.SLOTS.LIST_INFEED} format="horizontal" className="my-2" />
-                    )}
+                    {/* [삭제됨] 목록 중간 광고 */}
                   </div>
                 );
               })}
             </div>
 
-            <AdBanner className="mt-4" slot={AD_CONFIG.SLOTS.LIST_FOOTER} format="horizontal" />
+            {/* [삭제됨] 목록 하단 광고 */}
           </div>
         )}
       </div>

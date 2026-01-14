@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { AD_CONFIG } from './adConfig';
 import AdBanner from './components/AdBanner';
+import KakaoAdFit from './components/KakaoAdFit';
 
 function getYouTubeID(url: string) {
     if (!url) return null;
@@ -83,11 +84,17 @@ export default function ReadSong() {
                 )}
 
                 {/* 3. 광고 (텍스트 사이에 배치 - 인피드 느낌) */}
-                <AdBanner slot={AD_CONFIG.SLOTS.READ_MIDDLE} format="horizontal" className="my-6" />
+                {/* <AdBanner slot={AD_CONFIG.SLOTS.READ_MIDDLE} format="horizontal" className="my-6" /> */}
+
 
                 {/* 4. 전체 가사 (메인 콘텐츠) */}
                 <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-6">
                     {song.lyrics_content}
+                </div>
+
+                {/* [NEW] 가사 직후 광고 (주목도 높음) */}
+                <div className="my-6 flex justify-center">
+                    <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="100" />
                 </div>
 
                 {/* 5. 유튜브 영상 */}
@@ -110,9 +117,9 @@ export default function ReadSong() {
 
             </div>
 
-            {/* 7. 하단 광고 */}
-            <div className="w-full max-w-2xl mt-6">
-                <AdBanner slot={AD_CONFIG.SLOTS.READ_BOTTOM} />
+            {/* [NEW] 페이지 맨 하단 광고 */}
+            <div className="w-full max-w-2xl mt-6 mb-10 flex justify-center">
+                <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />
             </div>
         </div>
     );

@@ -2,8 +2,10 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useTranslation } from 'react-i18next';
-import AdBanner from './components/AdBanner';
-import { AD_CONFIG } from './adConfig';
+//import AdBanner from './components/AdBanner';
+import KakaoAdFit from './components/KakaoAdFit';
+import DonationButton from './components/DonationButton';
+//import { AD_CONFIG } from './adConfig';
 
 interface WordObj { original: string; clean: string; isBlank: boolean; userInput: string; isNewline?: boolean; }
 
@@ -164,7 +166,11 @@ export default function Game() {
       {gameState !== 'playing' && (
         <div className="w-full max-w-2xl mt-6 p-4 bg-gray-100 rounded text-center text-xs text-gray-400 mb-6">
           <p className="mb-2">{t('app.ad_area')}</p>
-          <AdBanner slot={AD_CONFIG.SLOTS.GAME_BOTTOM} />
+          <DonationButton />
+          {/* [NEW] 후원 버튼 아래에 은근슬쩍 배치 */}
+          <div className="mt-2 flex justify-center">
+            <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />
+          </div>
         </div>
       )}
     </div>

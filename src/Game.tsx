@@ -150,6 +150,11 @@ export default function Game() {
               <button onClick={handleResultShare} className="w-full bg-green-500 text-white py-3 rounded-lg font-bold">{t('game.btn_share')}</button>
             </div>
 
+            {/* 결과를 볼 때 후원 버튼 볼 수 있도록 */}
+            <div className="mt-2 flex justify-center">
+              <DonationButton />
+            </div>
+
             {/* 4. 수정 요청 폼 (메일 링크 삭제됨) */}
             <div className="border-t pt-6 text-left">
               <h4 className="text-sm font-bold text-gray-600 mb-2">{t('game.report_title')}</h4>
@@ -166,7 +171,6 @@ export default function Game() {
       {gameState !== 'playing' && (
         <div className="w-full max-w-2xl mt-6 p-4 bg-gray-100 rounded text-center text-xs text-gray-400 mb-6">
           <p className="mb-2">{t('app.ad_area')}</p>
-          <DonationButton />
           {/* [NEW] 후원 버튼 아래에 은근슬쩍 배치 */}
           <div className="mt-2 flex justify-center">
             <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />

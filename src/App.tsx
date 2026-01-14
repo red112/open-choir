@@ -203,14 +203,14 @@ function Home({ user }: { user: User | null }) {
                       </div>
                       <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
                     </div>
-                    {/* [NEW] 목록 맨 하단 광고 */}
-                    <div className="mt-4 mb-20 flex justify-center">
-                      {/* 본인의 하단 광고 단위 ID(320x50)를 넣으세요 */}
-                      <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />
-                    </div>
                   </div>
                 );
               })}
+            </div>
+            {/* [NEW] 목록 맨 하단 광고 */}
+            <div className="mt-4 mb-20 flex justify-center">
+              {/* 본인의 하단 광고 단위 ID(320x50)를 넣으세요 */}
+              <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />
             </div>
           </div>
         )}

@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-import { AD_CONFIG } from './adConfig';
-import AdBanner from './components/AdBanner';
+//import { AD_CONFIG } from './adConfig';
+//import AdBanner from './components/AdBanner';
 import KakaoAdFit from './components/KakaoAdFit';
 
 function getYouTubeID(url: string) {

@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useTranslation } from 'react-i18next';
-// [수정] 텐핑, 기존 버튼 제거하고 새 컴포넌트 import
 import DonationSection from './components/DonationSection';
 
 interface WordObj { original: string; clean: string; isBlank: boolean; userInput: string; isNewline?: boolean; }
@@ -23,9 +22,6 @@ export default function Game() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timerRef = useRef<number | null>(null);
 
-  // ... (useEffect, fetchGameData, normalizeText, handleInputChange, handleKeyDown 로직은 기존과 동일) ...
-  // (생략된 부분은 기존 코드 그대로 유지해주세요)
-
   useEffect(() => {
     fetchGameData();
     timerRef.current = window.setInterval(() => { setTimeElapsed((prev) => prev + 1); }, 1000);
@@ -33,8 +29,6 @@ export default function Game() {
   }, [songId]);
 
   async function fetchGameData() {
-    // ... (기존 로직)
-    // 여기에 기존 fetchGameData 내용을 그대로 두세요 (지면 관계상 생략)
     try {
       const { data: song, error } = await supabase.from('songs').select('*').eq('song_id', songId).single();
       if (error || !song) throw new Error('Load failed');
@@ -77,7 +71,7 @@ export default function Game() {
         }
       }
     }
-  }
+  };
 
   const finishGame = async () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -121,7 +115,8 @@ export default function Game() {
 
       <div className="w-full max-w-2xl bg-white p-6 rounded-xl shadow-lg text-lg">
         {gameState === 'playing' ? (
-          <div className="flex flex-wrap gap-2 items-center leading-loose content-start">
+          // [수정] pb-24 추가 (하단 고정 버튼이 가릴 공간 확보)
+          <div className="flex flex-wrap gap-2 items-center leading-loose content-start pb-24">
             {words.map((word, idx) => {
               if (word.isNewline) return <div key={idx} className="basis-full h-2"></div>;
               if (!word.isBlank) return <span key={idx} className="text-gray-800">{word.original}</span>;
@@ -153,13 +148,12 @@ export default function Game() {
               <button onClick={handleResultShare} className="w-full bg-green-500 text-white py-3 rounded-lg font-bold">{t('game.btn_share')}</button>
             </div>
 
-            {/* 4. [NEW] 후원 유도 (85점 이상일 때만 표시) */}
+            {/* 4. 후원 유도 (85점 이상) */}
             {score >= 85 ? (
               <div className="mb-8">
                 <DonationSection />
               </div>
             ) : (
-              // 85점 미만일 땐 격려 메시지
               <div className="mb-8 p-4 bg-gray-50 rounded-lg text-gray-500 text-sm">
                 {t('game.score_low_desc')}
               </div>

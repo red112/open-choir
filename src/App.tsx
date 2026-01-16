@@ -120,14 +120,7 @@ function Home({ user }: { user: User | null }) {
             <button onClick={() => navigate('/guide')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_guide')}</button>
           </nav>
 
-          <div className="w-full max-w-2xl bg-white p-4 rounded-xl shadow-sm mb-4 border border-indigo-100">
-            <h2 className="text-sm font-bold text-indigo-800 mb-1">Sing by Heart에 오신 것을 환영합니다! 👋</h2>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              합창단, 성가대를 위한 <b>가사 암기 트레이닝 서비스</b>입니다.<br />
-              아래 목록에서 연습할 곡을 선택하여 가사를 학습하고, 빈칸 채우기 게임을 통해 암기력을 테스트해 보세요.<br />
-              (로그인하시면 나만의 연습 기록을 관리할 수 있습니다.)
-            </p>
-          </div>
+          {/* [삭제됨] 환영 문구 텍스트 박스 제거 */}
 
           <div className="w-full max-w-2xl mb-4">
             {user ? (
@@ -164,11 +157,10 @@ function Home({ user }: { user: User | null }) {
               )}
             </div>
 
-            <div className="space-y-3 pb-10">
+            <div className="space-y-3 pb-20">
               {(activeTab === 'recent' || activeTab === 'my') && !user && <div className="text-center py-10 bg-white rounded-xl border border-dashed"><p className="text-gray-500 mb-2">{t('app.login_required')}</p><button onClick={handleLogin} className="text-sm text-indigo-600 font-bold hover:underline">{t('app.go_login')}</button></div>}
               {user && displayList.length === 0 && <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">{t('app.empty_list')}</div>}
 
-              {/* [수정] index 파라미터 삭제 (사용 안 함) */}
               {displayList.map((song) => {
                 const hasIssues = song.song_issues && song.song_issues[0] && song.song_issues[0].count > 0;
                 return (

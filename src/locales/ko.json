@@ -79,7 +79,14 @@
         "report_sent": "수정 요청이 등록되었습니다.",
         "report_email_btn": "가사가 이상한가요? 오류 제보하기",
         "share_msg": "🎵 [{{title}}] 가사 암기 도전! 제 점수는 {{score}}점입니다.",
-        "copy_complete": "주소가 복사되었습니다!"
+        "copy_complete": "주소가 복사되었습니다!",
+        "score_high_title": "👏 대단해요! 거의 다 외우셨네요!",
+        "score_high_desc": "이제 무대에서도 자신 있게 부를 수 있겠어요.\n기분 좋은 오늘, 개발자에게 목캔디 하나 선물하는 건 어떨까요?",
+        "score_low_desc": "조금만 더 힘내세요! 완벽하게 외울 때까지 파이팅!"
+    },
+    "donation": {
+        "btn_result": "개발자 목 축여주기 (목캔디) 🍬",
+        "bmc_desc": "간편하게 해외 결제 / 카드 결제"
     },
     "piano": {
         "rotate_hint": "🎹 화면을 가로로 돌리면 더 편해요"

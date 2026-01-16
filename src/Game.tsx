@@ -2,10 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useTranslation } from 'react-i18next';
-//import AdBanner from './components/AdBanner';
-import KakaoAdFit from './components/KakaoAdFit';
-import DonationButton from './components/DonationButton';
-//import { AD_CONFIG } from './adConfig';
+// [수정] 텐핑, 기존 버튼 제거하고 새 컴포넌트 import
+import DonationSection from './components/DonationSection';
 
 interface WordObj { original: string; clean: string; isBlank: boolean; userInput: string; isNewline?: boolean; }
 
@@ -25,6 +23,9 @@ export default function Game() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timerRef = useRef<number | null>(null);
 
+  // ... (useEffect, fetchGameData, normalizeText, handleInputChange, handleKeyDown 로직은 기존과 동일) ...
+  // (생략된 부분은 기존 코드 그대로 유지해주세요)
+
   useEffect(() => {
     fetchGameData();
     timerRef.current = window.setInterval(() => { setTimeElapsed((prev) => prev + 1); }, 1000);
@@ -32,6 +33,8 @@ export default function Game() {
   }, [songId]);
 
   async function fetchGameData() {
+    // ... (기존 로직)
+    // 여기에 기존 fetchGameData 내용을 그대로 두세요 (지면 관계상 생략)
     try {
       const { data: song, error } = await supabase.from('songs').select('*').eq('song_id', songId).single();
       if (error || !song) throw new Error('Load failed');
@@ -74,7 +77,7 @@ export default function Game() {
         }
       }
     }
-  };
+  }
 
   const finishGame = async () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -127,7 +130,7 @@ export default function Game() {
           </div>
         ) : (
           <div className="text-center py-5">
-            {/* 1. [순서 변경] 상세 결과(오답노트)를 가장 위에 배치 */}
+            {/* 1. 결과 상세 (오답노트) */}
             <div className="text-left bg-gray-50 p-4 rounded-lg mb-8 leading-loose">
               <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">{t('game.result_detail')}</h3>
               <div className="flex flex-wrap gap-1">
@@ -145,17 +148,24 @@ export default function Game() {
             <div className="text-6xl font-black text-indigo-600 mb-6">{score}{t('game.score')}</div>
 
             {/* 3. 버튼 그룹 */}
-            <div className="flex flex-col gap-3 justify-center w-full max-w-xs mx-auto mb-10">
+            <div className="flex flex-col gap-3 justify-center w-full max-w-xs mx-auto mb-8">
               <div className="flex gap-3"><button onClick={() => window.location.reload()} className="flex-1 bg-indigo-500 text-white py-3 rounded-lg font-bold">{t('game.btn_retry')}</button><button onClick={() => navigate('/')} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold">{t('game.btn_list')}</button></div>
               <button onClick={handleResultShare} className="w-full bg-green-500 text-white py-3 rounded-lg font-bold">{t('game.btn_share')}</button>
             </div>
 
-            {/* 결과를 볼 때 후원 버튼 볼 수 있도록 */}
-            <div className="mt-2 flex justify-center">
-              <DonationButton />
-            </div>
+            {/* 4. [NEW] 후원 유도 (85점 이상일 때만 표시) */}
+            {score >= 85 ? (
+              <div className="mb-8">
+                <DonationSection />
+              </div>
+            ) : (
+              // 85점 미만일 땐 격려 메시지
+              <div className="mb-8 p-4 bg-gray-50 rounded-lg text-gray-500 text-sm">
+                {t('game.score_low_desc')}
+              </div>
+            )}
 
-            {/* 4. 수정 요청 폼 (메일 링크 삭제됨) */}
+            {/* 5. 수정 요청 폼 */}
             <div className="border-t pt-6 text-left">
               <h4 className="text-sm font-bold text-gray-600 mb-2">{t('game.report_title')}</h4>
               <textarea value={reportText} onChange={(e) => setReportText(e.target.value)} placeholder={t('game.report_placeholder')} maxLength={100} className="w-full p-2 border rounded text-sm h-20 mb-2"></textarea>
@@ -166,17 +176,6 @@ export default function Game() {
       </div>
 
       {gameState === 'playing' && <div className="fixed bottom-6 w-full max-w-xs px-4"><button onClick={finishGame} className="w-full bg-indigo-600 text-white py-4 rounded-full shadow-xl text-xl font-bold">{t('game.btn_check')}</button></div>}
-
-      {/* [수정] 게임 중(playing)일 때는 광고 렌더링 안 함 (null) */}
-      {gameState !== 'playing' && (
-        <div className="w-full max-w-2xl mt-6 p-4 bg-gray-100 rounded text-center text-xs text-gray-400 mb-6">
-          <p className="mb-2">{t('app.ad_area')}</p>
-          {/* [NEW] 후원 버튼 아래에 은근슬쩍 배치 */}
-          <div className="mt-2 flex justify-center">
-            <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

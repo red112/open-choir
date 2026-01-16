@@ -3,9 +3,6 @@ import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-// import { AD_CONFIG } from './adConfig'; // [삭제] 사용 안 함
-// import AdBanner from './components/AdBanner'; // [삭제] 사용 안 함
-import KakaoAdFit from './components/KakaoAdFit';
 import CreateSong from './CreateSong';
 import ReadSong from './ReadSong';
 import Game from './Game';
@@ -206,11 +203,6 @@ function Home({ user }: { user: User | null }) {
                   </div>
                 );
               })}
-            </div>
-            {/* [NEW] 목록 맨 하단 광고 */}
-            <div className="mt-4 mb-20 flex justify-center">
-              {/* 본인의 하단 광고 단위 ID(320x50)를 넣으세요 */}
-              <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />
             </div>
           </div>
         )}

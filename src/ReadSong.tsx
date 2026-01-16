@@ -3,9 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-//import { AD_CONFIG } from './adConfig';
-//import AdBanner from './components/AdBanner';
-import KakaoAdFit from './components/KakaoAdFit';
 
 function getYouTubeID(url: string) {
     if (!url) return null;
@@ -92,11 +89,6 @@ export default function ReadSong() {
                     {song.lyrics_content}
                 </div>
 
-                {/* [NEW] 가사 직후 광고 (주목도 높음) */}
-                <div className="my-6 flex justify-center">
-                    <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="100" />
-                </div>
-
                 {/* 5. 유튜브 영상 */}
                 {song.youtube_url && getYouTubeID(song.youtube_url) && (
                     <div className="mb-8 aspect-video rounded-lg overflow-hidden bg-black shadow-md">
@@ -115,11 +107,6 @@ export default function ReadSong() {
                     </button>
                 </div>
 
-            </div>
-
-            {/* [NEW] 페이지 맨 하단 광고 */}
-            <div className="w-full max-w-2xl mt-6 mb-10 flex justify-center">
-                <KakaoAdFit unit="DAN-K8l4lZeykkMpLEtE" width="320" height="50" />
             </div>
         </div>
     );

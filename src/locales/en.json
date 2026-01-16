@@ -79,7 +79,14 @@
         "report_sent": "Report sent.",
         "report_email_btn": "Report via Email",
         "share_msg": "🎵 [{{title}}] Memory Challenge! My score: {{score}}.",
-        "copy_complete": "Link copied!"
+        "copy_complete": "Link copied!",
+        "score_high_title": "👏 Amazing! You almost mastered it!",
+        "score_high_desc": "You are ready for the stage.\nHow about celebrating with a treat for the developer?",
+        "score_low_desc": "Keep going! You can do it!"
+    },
+    "donation": {
+        "btn_result": "Gift a lozenge! 🍬",
+        "bmc_desc": "Easy Card Payment"
     },
     "piano": {
         "rotate_hint": "🎹 Rotate to landscape for easier playing"

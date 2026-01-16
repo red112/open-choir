@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function DonationSection() {
     const { t } = useTranslation();
-    // 심책임님 BMC 주소
+    const [showToss, setShowToss] = useState(false); // 토스 QR 보임 여부 상태
     const bmcLink = "https://www.buymeacoffee.com/singbyhearts";
 
     return (
-        <div className="bg-yellow-50 rounded-xl p-6 border-2 border-yellow-200 shadow-sm animate-fade-in-up text-center">
+        <div className="bg-yellow-50 rounded-xl p-6 border-2 border-yellow-200 shadow-sm animate-fade-in-up text-center transition-all duration-300">
 
             {/* 1. 칭찬 문구 */}
             <h3 className="text-lg font-bold text-gray-800 mb-2 whitespace-pre-wrap">
@@ -16,7 +17,7 @@ export default function DonationSection() {
                 {t('game.score_high_desc')}
             </p>
 
-            {/* 2. BMC 버튼 (단독) */}
+            {/* 2. BMC 버튼 (메인) */}
             <a
                 href={bmcLink}
                 target="_blank"
@@ -33,10 +34,32 @@ export default function DonationSection() {
                 </span>
             </a>
 
-            {/* 3. 부가 설명 */}
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-gray-400 mt-2 mb-6">
                 {t('donation.bmc_desc')}
             </p>
+
+            {/* 3. 구분선 */}
+            <div className="border-t border-yellow-200 w-full my-4"></div>
+
+            {/* 4. 토스 QR 토글 버튼 (서브) */}
+            <button
+                onClick={() => setShowToss(!showToss)}
+                className="text-xs text-gray-500 hover:text-indigo-600 underline flex items-center justify-center w-full gap-1 transition-colors"
+            >
+                {showToss ? '▲ QR코드 접기' : `▼ ${t('donation.toss_btn')}`}
+            </button>
+
+            {/* 5. 토스 QR 이미지 영역 (선택 시 열림) */}
+            {showToss && (
+                <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200 flex flex-col items-center animate-fade-in shadow-inner">
+                    <img
+                        src="/toss_qr.png"
+                        alt="Toss QR Code"
+                        className="w-32 h-32 object-contain mb-2"
+                    />
+                    <p className="text-xs text-gray-400">{t('donation.toss_guide')}</p>
+                </div>
+            )}
         </div>
     );
 }

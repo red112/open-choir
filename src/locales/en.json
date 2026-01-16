@@ -85,8 +85,13 @@
         "score_low_desc": "Keep going! You can do it!"
     },
     "donation": {
-        "btn_result": "Gift a lozenge! 🍬",
-        "bmc_desc": "Easy Card Payment"
+        "btn_default": "Buy me a throat lozenge",
+        "btn_result": "Celebrate with a lozenge gift! 🍬",
+        "msg_default": "Your support keeps the server running.",
+        "msg_result": "Perfect score! Share energy with dev.",
+        "bmc_desc": "Credit Card / PayPal",
+        "toss_btn": "Donate via Toss/KakaoPay (KR)",
+        "toss_guide": "Scan QR code with your camera."
     },
     "piano": {
         "rotate_hint": "🎹 Rotate to landscape for easier playing"

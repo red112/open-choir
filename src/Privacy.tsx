@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import AdBanner from './components/AdBanner';
 
 export default function Privacy() {
   const navigate = useNavigate();
@@ -61,12 +60,6 @@ export default function Privacy() {
           </section>
         </div>
 
-      </div>
-
-      {/* [NEW] 광고 추가: 푸터 바로 위가 명당입니다 */}
-      <div className="w-full max-w-2xl mt-4 px-4">
-        <AdBanner slot="CONTENT_BOTTOM_SLOT_ID" />
-        {/* ▲ 애드센스에서 '콘텐츠용' 광고단위를 하나 만들고 그 ID를 넣으세요 */}
       </div>
     </div>
   );

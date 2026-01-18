@@ -16,6 +16,7 @@ export default function Game() {
   const [words, setWords] = useState<WordObj[]>([]);
   const [gameState, setGameState] = useState<'playing' | 'finished'>('playing');
   const [score, setScore] = useState(0);
+  const [avgScore, setAvgScore] = useState<number | null>(null); // 평균 점수 상태
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [reportText, setReportText] = useState('');
 
@@ -32,7 +33,9 @@ export default function Game() {
     try {
       const { data: song, error } = await supabase.from('songs').select('*').eq('song_id', songId).single();
       if (error || !song) throw new Error('Load failed');
+
       setSongTitle(song.title);
+      setAvgScore(song.average_score); // 로딩 시 평균 점수 저장
 
       const lines = song.lyrics_content.split('\n');
       const tempAllWords: WordObj[] = [];
@@ -60,6 +63,8 @@ export default function Game() {
 
   function normalizeText(text: string) { return text.trim().toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""); }
   const handleInputChange = (index: number, val: string) => { const newWords = [...words]; newWords[index].userInput = val; setWords(newWords); };
+
+  // [수정] _currentIndex (사용하지 않으므로 prefix 처리)
   const handleKeyDown = (e: React.KeyboardEvent, _currentIndex: number) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -83,9 +88,16 @@ export default function Game() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      // 1. 최근 연습 목록 (로그인 유저만)
       if (user) await supabase.rpc('update_recent_songs', { song_id: songId });
+
+      // 2. 전체 플레이 횟수 (일별 통계)
       await supabase.rpc('increment_play_count');
-    } catch (err) { console.error(err); }
+
+      // 3. [중요] 노래별 인기 통계 및 평균점수 갱신
+      await supabase.rpc('update_song_stats', { p_song_id: songId, p_score: finalScore });
+
+    } catch (err) { console.error('통계 저장 실패:', err); }
   };
 
   const handleResultShare = async () => {
@@ -115,7 +127,6 @@ export default function Game() {
 
       <div className="w-full max-w-2xl bg-white p-6 rounded-xl shadow-lg text-lg">
         {gameState === 'playing' ? (
-          // [수정] pb-24 추가 (하단 고정 버튼이 가릴 공간 확보)
           <div className="flex flex-wrap gap-2 items-center leading-loose content-start pb-24">
             {words.map((word, idx) => {
               if (word.isNewline) return <div key={idx} className="basis-full h-2"></div>;
@@ -125,7 +136,6 @@ export default function Game() {
           </div>
         ) : (
           <div className="text-center py-5">
-            {/* 1. 결과 상세 (오답노트) */}
             <div className="text-left bg-gray-50 p-4 rounded-lg mb-8 leading-loose">
               <h3 className="font-bold text-gray-800 mb-4 border-b pb-2">{t('game.result_detail')}</h3>
               <div className="flex flex-wrap gap-1">
@@ -138,17 +148,22 @@ export default function Game() {
               </div>
             </div>
 
-            {/* 2. 점수 및 메시지 */}
-            <h2 className="text-3xl font-bold mb-4">{score === 100 ? t('game.perfect') : t('game.good_job')}</h2>
-            <div className="text-6xl font-black text-indigo-600 mb-6">{score}{t('game.score')}</div>
+            <h2 className="text-3xl font-bold mb-2">{score === 100 ? t('game.perfect') : t('game.good_job')}</h2>
+            <div className="text-6xl font-black text-indigo-600 mb-2">{score}{t('game.score')}</div>
 
-            {/* 3. 버튼 그룹 */}
+            {/* 평균 점수 표시 */}
+            {avgScore !== null && (
+              <p className="text-sm text-gray-500 mb-6">
+                ( {t('game.avg_score')} <span className="font-bold">{avgScore}</span> )
+              </p>
+            )}
+
             <div className="flex flex-col gap-3 justify-center w-full max-w-xs mx-auto mb-8">
               <div className="flex gap-3"><button onClick={() => window.location.reload()} className="flex-1 bg-indigo-500 text-white py-3 rounded-lg font-bold">{t('game.btn_retry')}</button><button onClick={() => navigate('/')} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold">{t('game.btn_list')}</button></div>
               <button onClick={handleResultShare} className="w-full bg-green-500 text-white py-3 rounded-lg font-bold">{t('game.btn_share')}</button>
             </div>
 
-            {/* 4. 후원 유도 (85점 이상) */}
+            {/* 후원 섹션 (85점 이상) */}
             {score >= 85 ? (
               <div className="mb-8">
                 <DonationSection />
@@ -159,7 +174,6 @@ export default function Game() {
               </div>
             )}
 
-            {/* 5. 수정 요청 폼 */}
             <div className="border-t pt-6 text-left">
               <h4 className="text-sm font-bold text-gray-600 mb-2">{t('game.report_title')}</h4>
               <textarea value={reportText} onChange={(e) => setReportText(e.target.value)} placeholder={t('game.report_placeholder')} maxLength={100} className="w-full p-2 border rounded text-sm h-20 mb-2"></textarea>

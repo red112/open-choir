@@ -20,7 +20,10 @@
         "ad_area": "광고 영역",
         "sort_asc": "가나다순 ⬇️",
         "sort_desc": "가나다순 ⬆️",
-        "btn_guide": "사용법"
+        "btn_guide": "사용법",
+        "sort_name": "가나다순",
+        "sort_popular": "인기순 (게임횟수)",
+        "stat_play": "회 플레이"
     },
     "song": {
         "level": "난이도 Lv.",
@@ -82,7 +85,8 @@
         "copy_complete": "주소가 복사되었습니다!",
         "score_high_title": "👏 대단해요! 거의 다 외우셨네요!",
         "score_high_desc": "이제 무대에서도 자신 있게 부를 수 있겠어요.\n기분 좋은 오늘, 개발자에게 목캔디 하나 선물하는 건 어떨까요?",
-        "score_low_desc": "조금만 더 힘내세요! 완벽하게 외울 때까지 파이팅!"
+        "score_low_desc": "조금만 더 힘내세요! 완벽하게 외울 때까지 파이팅!",
+        "avg_score": "평균 점수: "
     },
     "donation": {
         "btn_result": "🍬목캔디🍬로 노래 좋아하는 개발자 응원하기",

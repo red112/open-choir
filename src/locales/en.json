@@ -20,7 +20,10 @@
         "ad_area": "Advertisement Area",
         "sort_asc": "A-Z ⬇️",
         "sort_desc": "Z-A ⬆️",
-        "btn_guide": "Guide"
+        "btn_guide": "Guide",
+        "sort_name": "Name (A-Z)",
+        "sort_popular": "Popularity",
+        "stat_play": "plays"
     },
     "song": {
         "level": "Lv.",
@@ -82,7 +85,8 @@
         "copy_complete": "Link copied!",
         "score_high_title": "👏 Amazing! You almost mastered it!",
         "score_high_desc": "You are ready for the stage.\nHow about celebrating with a treat for the developer?",
-        "score_low_desc": "Keep going! You can do it!"
+        "score_low_desc": "Keep going! You can do it!",
+        "avg_score": "Avg Score: "
     },
     "donation": {
         "btn_default": "Buy me a throat lozenge",

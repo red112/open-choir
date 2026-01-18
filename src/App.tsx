@@ -12,7 +12,6 @@ import Privacy from './Privacy';
 import Guide from './Guide';
 import About from './About';
 
-// 1. 홈 화면 컴포넌트
 function Home({ user }: { user: User | null }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -21,7 +20,9 @@ function Home({ user }: { user: User | null }) {
   const [recentSongs, setRecentSongs] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'recent' | 'my' | 'piano'>('all');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // 정렬 상태: 'name'(가나다) vs 'popular'(인기)
+  const [sortBy, setSortBy] = useState<'name' | 'popular'>('name');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -64,8 +65,18 @@ function Home({ user }: { user: User | null }) {
       const lowerTerm = searchTerm.toLowerCase();
       targetList = targetList.filter(song => song.title.toLowerCase().includes(lowerTerm) || song.lyrics_content.toLowerCase().includes(lowerTerm));
     }
+
     if (activeTab === 'recent') return targetList;
-    return [...targetList].sort((a, b) => { return sortOrder === 'asc' ? a.title.localeCompare(b.title, 'ko') : b.title.localeCompare(a.title, 'ko'); });
+
+    return [...targetList].sort((a, b) => {
+      if (sortBy === 'popular') {
+        const countDiff = (b.play_count || 0) - (a.play_count || 0);
+        if (countDiff !== 0) return countDiff;
+        return a.title.localeCompare(b.title, 'ko');
+      } else {
+        return a.title.localeCompare(b.title, 'ko');
+      }
+    });
   };
 
   const handleLogin = async () => { await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }); };
@@ -120,8 +131,6 @@ function Home({ user }: { user: User | null }) {
             <button onClick={() => navigate('/guide')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_guide')}</button>
           </nav>
 
-          {/* [삭제됨] 환영 문구 텍스트 박스 제거 */}
-
           <div className="w-full max-w-2xl mb-4">
             {user ? (
               <button onClick={() => navigate('/create')} className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"><span>➕ {t('app.new_song')}</span></button>
@@ -142,18 +151,23 @@ function Home({ user }: { user: User | null }) {
       <div className={`flex-1 min-h-0 relative ${activeTab === 'piano' ? 'w-full' : 'w-full max-w-2xl px-4'}`}>
 
         {activeTab === 'piano' ? (
-          <div className="w-full h-full pb-0 bg-black">
-            <Piano />
-          </div>
+          <div className="w-full h-full pb-0 bg-black"><Piano /></div>
         ) : (
           <div className="w-full h-full overflow-y-auto pb-4 scrollbar-hide">
+
             <div className="w-full flex gap-2 mb-4">
               <div className="flex-1 relative">
                 <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('app.search_placeholder')} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-400 absolute left-3 top-2.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
               </div>
+
               {activeTab !== 'recent' && (
-                <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')} className="flex items-center gap-1 text-xs text-gray-500 hover:text-indigo-600 px-3 py-2 rounded border border-gray-200 bg-white whitespace-nowrap">{sortOrder === 'asc' ? t('app.sort_asc') : t('app.sort_desc')}</button>
+                <button
+                  onClick={() => setSortBy(prev => prev === 'name' ? 'popular' : 'name')}
+                  className={`flex items-center gap-1 text-xs px-3 py-2 rounded border whitespace-nowrap transition ${sortBy === 'popular' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
+                >
+                  {sortBy === 'name' ? t('app.sort_name') : `🔥 ${t('app.sort_popular')}`}
+                </button>
               )}
             </div>
 
@@ -190,7 +204,14 @@ function Home({ user }: { user: User | null }) {
                           )}
                         </div>
                       </div>
-                      <div className="flex justify-between text-sm text-gray-500 mt-2"><span>{t('song.level')}{song.difficulty}</span><span className="truncate max-w-[150px]">{song.lyrics_content.slice(0, 15)}...</span></div>
+                      <div className="flex justify-between text-sm text-gray-500 mt-2">
+                        <span>{t('song.level')}{song.difficulty}</span>
+                        {/* 플레이 횟수 표시 */}
+                        <span className="text-gray-400 text-xs flex items-center">
+                          🎮 {song.play_count || 0} {t('app.stat_play')}
+                        </span>
+                        <span className="truncate max-w-[100px]">{song.lyrics_content.slice(0, 10)}...</span>
+                      </div>
                     </div>
                   </div>
                 );

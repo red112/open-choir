@@ -12,6 +12,7 @@ import Privacy from './Privacy';
 import Guide from './Guide';
 import About from './About';
 
+// 1. 홈 화면 컴포넌트
 function Home({ user }: { user: User | null }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -21,9 +22,19 @@ function Home({ user }: { user: User | null }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'recent' | 'my' | 'piano'>('all');
 
-  // 정렬 상태: 'name'(가나다) vs 'popular'(인기)
-  const [sortBy, setSortBy] = useState<'name' | 'popular'>('name');
+  // [수정] 정렬 기준: localStorage에서 불러오기 (없으면 'name')
+  const [sortBy, setSortBy] = useState<'name' | 'popular'>(() => {
+    return (localStorage.getItem('sbh_sort') as 'name' | 'popular') || 'name';
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
+
+  // [수정] 정렬 기준 변경 핸들러 (저장 포함)
+  const handleSortChange = () => {
+    const newSort = sortBy === 'name' ? 'popular' : 'name';
+    setSortBy(newSort);
+    localStorage.setItem('sbh_sort', newSort);
+  };
 
   useEffect(() => {
     fetchSongs();
@@ -65,9 +76,7 @@ function Home({ user }: { user: User | null }) {
       const lowerTerm = searchTerm.toLowerCase();
       targetList = targetList.filter(song => song.title.toLowerCase().includes(lowerTerm) || song.lyrics_content.toLowerCase().includes(lowerTerm));
     }
-
     if (activeTab === 'recent') return targetList;
-
     return [...targetList].sort((a, b) => {
       if (sortBy === 'popular') {
         const countDiff = (b.play_count || 0) - (a.play_count || 0);
@@ -106,6 +115,7 @@ function Home({ user }: { user: User | null }) {
 
       {activeTab !== 'piano' && (
         <div className="w-full flex flex-col items-center px-4 pt-4 shrink-0">
+          {/* 1. 헤더 */}
           <header className="w-full max-w-2xl flex justify-between items-center mb-2 py-4 px-2 border-b bg-white rounded-xl shadow-sm">
             <h1 className="text-xl font-bold text-indigo-600 flex items-center gap-2 cursor-pointer" onClick={() => window.location.reload()}>
               {t('app.title')} 🎶
@@ -126,21 +136,25 @@ function Home({ user }: { user: User | null }) {
             </div>
           </header>
 
-          <nav className="w-full max-w-2xl flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
-            <button onClick={() => navigate('/about')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_about')}</button>
-            <button onClick={() => navigate('/guide')} className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_guide')}</button>
-          </nav>
+          {/* 2. [수정] 메뉴 및 등록 버튼 통합 (한 줄 배치) */}
+          <div className="w-full max-w-2xl flex justify-between items-center mb-2">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              <button onClick={() => navigate('/about')} className="flex-shrink-0 px-3 py-2 bg-white border border-gray-200 rounded-full text-xs text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_about')}</button>
+              <button onClick={() => navigate('/guide')} className="flex-shrink-0 px-3 py-2 bg-white border border-gray-200 rounded-full text-xs text-gray-600 font-medium hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm">{t('app.nav_guide')}</button>
+            </div>
 
-          <div className="w-full max-w-2xl mb-4">
-            {user ? (
-              <button onClick={() => navigate('/create')} className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"><span>➕ {t('app.new_song')}</span></button>
-            ) : (
-              <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-center text-sm border border-blue-100">👋 {t('app.login_guide')}</div>
+            {/* 등록 버튼을 오른쪽 끝에 배치 */}
+            {user && (
+              <button onClick={() => navigate('/create')} className="flex-shrink-0 bg-indigo-600 text-white px-3 py-2 rounded-full shadow-md font-bold text-xs hover:bg-indigo-700 transition flex items-center gap-1">
+                <span>➕ {t('app.new_song')}</span>
+              </button>
             )}
+            {/* 비로그인 시 간단한 안내 문구 없이 깔끔하게 (공간 절약) */}
           </div>
         </div>
       )}
 
+      {/* 3. 탭 메뉴 */}
       <div className={`w-full max-w-2xl flex border-b border-gray-300 mb-2 shrink-0 ${activeTab === 'piano' ? 'px-0 mt-2' : 'px-4'}`}>
         <button onClick={() => setActiveTab('all')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'all' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_all')} ({songs.length})</button>
         <button onClick={() => setActiveTab('recent')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'recent' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>{t('app.tab_recent')} ({user ? recentSongs.length : 0})</button>
@@ -148,30 +162,33 @@ function Home({ user }: { user: User | null }) {
         <button onClick={() => setActiveTab('piano')} className={`flex-1 py-3 text-center font-bold text-sm transition ${activeTab === 'piano' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>🎹 {t('app.tab_piano')}</button>
       </div>
 
+      {/* 4. [수정] 검색 및 정렬 (스크롤 영역 밖으로 이동 = 고정됨) */}
+      {activeTab !== 'piano' && (
+        <div className="w-full max-w-2xl flex gap-2 mb-2 px-4 shrink-0">
+          <div className="flex-1 relative">
+            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('app.search_placeholder')} className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400 absolute left-3 top-2.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+          </div>
+
+          {activeTab !== 'recent' && (
+            <button
+              onClick={handleSortChange}
+              className={`flex items-center gap-1 text-xs px-3 py-2 rounded border whitespace-nowrap transition ${sortBy === 'popular' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
+            >
+              {sortBy === 'name' ? t('app.sort_name') : `🔥 ${t('app.sort_popular')}`}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 5. 메인 콘텐츠 (스크롤 영역) */}
       <div className={`flex-1 min-h-0 relative ${activeTab === 'piano' ? 'w-full' : 'w-full max-w-2xl px-4'}`}>
 
         {activeTab === 'piano' ? (
           <div className="w-full h-full pb-0 bg-black"><Piano /></div>
         ) : (
           <div className="w-full h-full overflow-y-auto pb-4 scrollbar-hide">
-
-            <div className="w-full flex gap-2 mb-4">
-              <div className="flex-1 relative">
-                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('app.search_placeholder')} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-400 absolute left-3 top-2.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
-              </div>
-
-              {activeTab !== 'recent' && (
-                <button
-                  onClick={() => setSortBy(prev => prev === 'name' ? 'popular' : 'name')}
-                  className={`flex items-center gap-1 text-xs px-3 py-2 rounded border whitespace-nowrap transition ${sortBy === 'popular' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
-                >
-                  {sortBy === 'name' ? t('app.sort_name') : `🔥 ${t('app.sort_popular')}`}
-                </button>
-              )}
-            </div>
-
-            <div className="space-y-3 pb-20">
+            <div className="space-y-3 pb-10">
               {(activeTab === 'recent' || activeTab === 'my') && !user && <div className="text-center py-10 bg-white rounded-xl border border-dashed"><p className="text-gray-500 mb-2">{t('app.login_required')}</p><button onClick={handleLogin} className="text-sm text-indigo-600 font-bold hover:underline">{t('app.go_login')}</button></div>}
               {user && displayList.length === 0 && <div className="text-center text-gray-400 py-10 bg-white rounded-xl border border-dashed">{t('app.empty_list')}</div>}
 
@@ -206,7 +223,6 @@ function Home({ user }: { user: User | null }) {
                       </div>
                       <div className="flex justify-between text-sm text-gray-500 mt-2">
                         <span>{t('song.level')}{song.difficulty}</span>
-                        {/* 플레이 횟수 표시 */}
                         <span className="text-gray-400 text-xs flex items-center">
                           🎮 {song.play_count || 0} {t('app.stat_play')}
                         </span>

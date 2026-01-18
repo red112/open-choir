@@ -4,6 +4,7 @@ import { supabase } from './supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 
+// ... (getYouTubeID 함수는 기존과 동일) ...
 function getYouTubeID(url: string) {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -14,7 +15,7 @@ function getYouTubeID(url: string) {
 export default function ReadSong() {
     const { songId } = useParams();
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const [song, setSong] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -45,8 +46,8 @@ export default function ReadSong() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+            {/* [수정] title 태그 제거 (기본 타이틀 유지) */}
             <Helmet>
-                <title>{song.title} - Sing by Hearts</title>
                 <meta name="description" content={`Practice lyrics for ${song.title}.`} />
             </Helmet>
 
@@ -59,7 +60,7 @@ export default function ReadSong() {
             </div>
 
             <div className="w-full max-w-2xl bg-white p-6 md:p-8 rounded-xl shadow-lg">
-                {/* 1. 제목 및 정보 */}
+                {/* ... (이하 내용은 기존과 동일) ... */}
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{song.title}</h1>
                 <div className="flex gap-2 text-sm text-gray-500 mb-6 flex-wrap">
                     <span>{t('song.level')}{song.difficulty}</span>
@@ -67,7 +68,7 @@ export default function ReadSong() {
                     <span>{song.voice_part || 'All Parts'}</span>
                 </div>
 
-                {/* 2. [위치 이동] 게임 시작 버튼 (최상단) */}
+                {/* 게임 시작 버튼 */}
                 <button
                     onClick={() => navigate(`/game/${songId}`)}
                     className="w-full bg-indigo-600 text-white py-4 rounded-xl shadow-lg font-bold text-xl hover:bg-indigo-700 transition transform active:scale-95 flex justify-center items-center gap-2 mb-8"
@@ -75,12 +76,12 @@ export default function ReadSong() {
                     <span>🎮</span> {t('read.btn_start')}
                 </button>
 
-                {/* 3. 전체 가사 */}
+                {/* 전체 가사 */}
                 <div className="text-lg leading-loose text-gray-800 whitespace-pre-wrap font-medium mb-8 border-t pt-6">
                     {song.lyrics_content}
                 </div>
 
-                {/* 4. 유튜브 영상 (맨 아래) */}
+                {/* 유튜브 영상 */}
                 {song.youtube_url && getYouTubeID(song.youtube_url) && (
                     <div className="mb-8 aspect-video rounded-lg overflow-hidden bg-black shadow-md">
                         <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${getYouTubeID(song.youtube_url)}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
